@@ -7,13 +7,18 @@ public class EmpruntEnCours {
 	private Utilisateur emprunteur;
 	private Exemplaire exemplaire;
 	
-	public EmpruntEnCours(Utilisateur emprunteur, Exemplaire exemplaire, Date dateEmprunt) {
+	public EmpruntEnCours(Utilisateur emprunteur, Exemplaire exemplaire, Date dateEmprunt) throws BiblioException {
 		super();
 		this.dateEmprunt = dateEmprunt;
 		this.emprunteur = emprunteur;
 		this.exemplaire = exemplaire;
-		this.emprunteur.addEmpruntEnCours(this);
-		this.exemplaire.setEmpruntEnCours(this);
+		if (this.emprunteur.isConditionsPretAcceptees()) {
+			this.emprunteur.addEmpruntEnCours(this);
+			this.exemplaire.setEmpruntEnCours(this);
+		}
+		else {
+			throw new BiblioException("Conditions de Prets ne sont pas acceptées");
+		}
 	}
 
 	public Date getDateEmprunt() {
@@ -30,9 +35,15 @@ public class EmpruntEnCours {
 
 	@Override
 	public String toString() {
-		return "[dateEmprunt: " + dateEmprunt + "; emprunteur: "
-				+ emprunteur.getNom() 
-				+ "; exemplaire: " + exemplaire.getAuteur() + ", " + exemplaire.getTitle() + "]";
+		int daysEmprunt = ((int) (((new Date().getTime()) - (new Date().getTime())%(24*60*60*1000)) 
+				- (this.getDateEmprunt().getTime() - this.getDateEmprunt().getTime()%(24*60*60*1000))))
+				/ (24*60*60*1000);
+		return "[(Emprunt) dateEmprunt: " + dateEmprunt
+				+ " (" + daysEmprunt + " jour(s))"
+				+ "; emprunteur: " + emprunteur.getNom() 
+				+ "; exemplaire: " + exemplaire.getIdExemplaire() 
+				+ ", " + exemplaire.getAuteur() 
+				+ ", " + exemplaire.getTitle() + "]";
 	}
 	
 	

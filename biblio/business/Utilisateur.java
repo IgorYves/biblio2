@@ -47,6 +47,7 @@ public abstract class Utilisateur extends Personne {
 	@Override
 	public String toString() {
 		return super.toString() + "; (Utilisateur) idUtilisateur: " + idUtilisateur + "; pseudonyme: " + pseudonyme 
-				+ "; pwd: " + pwd + "; empruntsEnCours: " + empruntsEnCours;
+				+ "; pwd: " + pwd + "; empruntsEnCours: " + empruntsEnCours 
+				+ (getNbRetards() > 0 ? ", " + getNbRetards() + " retard(s)" : "");
 	}
 }
