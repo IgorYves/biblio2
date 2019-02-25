@@ -2,6 +2,10 @@ package biblio.tests;
 
 import java.util.Date;
 
+import javax.swing.JOptionPane;
+import javax.swing.JPasswordField;
+import javax.swing.JTextField;
+
 import biblio.business.BiblioException;
 import biblio.business.EmpruntEnCours;
 import biblio.business.Exemplaire;
@@ -12,15 +16,41 @@ import biblio.dao.UtilisateurDAO;
 public class TestDeBase {
 
 	public static void main(String[] args) {
+		JTextField username = new JTextField();
+		JTextField password = new JPasswordField();
+		Object[] message = {"Login (admin) : ", username, "Mot de passe (secret) : ", password};
+		boolean autentifOK = false;
+		boolean continu = true;
+		int option;
+		while (continu) {
+			option = JOptionPane.showConfirmDialog(null, message,
+					"Autentifiez-vous SVP", JOptionPane.OK_CANCEL_OPTION);
+			if (option == JOptionPane.OK_OPTION) {
+				if (username.getText().equals("admin") && password.getText().equals("secret")) {
+					System.out.println("Autentification est OK");
+					autentifOK = true;
+					continu = false;
+				} else {
+					System.out.println("Autentification echouée");
+				}
+			} else {
+				System.out.println("Autentification annulée");
+				continu = false;
+			}
+		}
+		System.out.println();
+		
+		if (!autentifOK) System.exit(0);
+		
 		ExemplaireDAO exDAO = new ExemplaireDAO();
 		System.out.println("--------------- debut des tests");
-		
+
 		Exemplaire ex1 = exDAO.findByKey(0);
 		System.out.println("ExemplaireDAO find by key (0) -> ex1 >>>> " + ex1);
-		
+
 		Exemplaire ex2 = exDAO.findByKey(1);
 		System.out.println("ExemplaireDAO find by key (1) -> ex2 >>>> " + ex2);
-		
+
 		System.out.println();
 		UtilisateurDAO userDAO = new UtilisateurDAO();
 
@@ -29,23 +59,24 @@ public class TestDeBase {
 
 		Utilisateur em2 = userDAO.findByKey(1);
 		System.out.println("UtilisateurDAO find by key (1) -> em2 >>>> " + em2);
-		
+
 		try {
-			EmpruntEnCours empruntEnCours1 = new EmpruntEnCours(ad1, ex1, new Date());
-			EmpruntEnCours empruntEnCours2 = new EmpruntEnCours(em2, ex2, new Date());
+			EmpruntEnCours empruntEnCours1 = new EmpruntEnCours(ad1, ex1,
+					new Date());
+			EmpruntEnCours empruntEnCours2 = new EmpruntEnCours(em2, ex2,
+					new Date());
 		} catch (BiblioException e) {
 			e.printStackTrace();
 		}
-		
-		
+
 		System.out.println();
-		
+
 		System.out.println(ad1);
 		System.out.println(ad1.getEmpruntEnCours());
 		System.out.println();
 		System.out.println(em2);
 		System.out.println(em2.getEmpruntEnCours());
-		
+
 	}
 
 }

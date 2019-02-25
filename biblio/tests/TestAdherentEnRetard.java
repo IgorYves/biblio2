@@ -2,6 +2,10 @@ package biblio.tests;
 
 import java.util.Date;
 
+import javax.swing.JOptionPane;
+import javax.swing.JPasswordField;
+import javax.swing.JTextField;
+
 import biblio.business.BiblioException;
 import biblio.business.EmpruntEnCours;
 import biblio.business.Exemplaire;
@@ -12,6 +16,32 @@ import biblio.dao.UtilisateurDAO;
 public class TestAdherentEnRetard {
 
 	public static void main(String[] args) {
+		JTextField username = new JTextField();
+		JTextField password = new JPasswordField();
+		Object[] message = {"Login (admin) : ", username, "Mot de passe (secret) : ", password};
+		boolean autentifOK = false;
+		boolean continu = true;
+		int option;
+		while (continu) {
+			option = JOptionPane.showConfirmDialog(null, message,
+					"Autentifiez-vous SVP", JOptionPane.OK_CANCEL_OPTION);
+			if (option == JOptionPane.OK_OPTION) {
+				if (username.getText().equals("admin") && password.getText().equals("secret")) {
+					System.out.println("Autentification est OK");
+					autentifOK = true;
+					continu = false;
+				} else {
+					System.out.println("Autentification echouée");
+				}
+			} else {
+				System.out.println("Autentification annulée");
+				continu = false;
+			}
+		}
+		System.out.println();
+		
+		if (!autentifOK) System.exit(0);
+		
 		ExemplaireDAO exDAO = new ExemplaireDAO();
 		System.out.println("--------------- debut des tests");
 		
