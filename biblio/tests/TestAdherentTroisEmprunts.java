@@ -18,7 +18,7 @@ public class TestAdherentTroisEmprunts {
 	public static void main(String[] args) {
 		JTextField username = new JTextField();
 		JTextField password = new JPasswordField();
-		Object[] message = {"Login (admin) : ", username, "Mot de passe (secret) : ", password};
+		Object[] message = {"Login (\"admin\") : ", username, "Mot de passe (\"secret\") : ", password};
 		boolean autentifOK = false;
 		boolean continu = true;
 		int option;
