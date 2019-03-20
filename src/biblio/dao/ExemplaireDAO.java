@@ -1,57 +1,66 @@
 package biblio.dao;
 
-import java.util.Comparator;
-import java.util.Date;
-import java.util.HashMap;
+import java.io.IOException;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 
 import biblio.business.EnumStatusExemplaire;
 import biblio.business.Exemplaire;
 
 public class ExemplaireDAO {
-	private HashMap<Integer, Exemplaire> exemplaireDB = new HashMap<>();
+	private Connection connection;
 	
-	public ExemplaireDAO() {
-		exemplaireDB.put(0, new Exemplaire(0, "3 musketers", "dumas", 
-				new Date(), "978-985-6020-09-7", EnumStatusExemplaire.DISPONIBLE));
-		exemplaireDB.put(1, new Exemplaire(1, "miserables", "victor hugo", 
-				new Date(), "978-966-7343-29-3", EnumStatusExemplaire.DISPONIBLE));
-		exemplaireDB.put(2, new Exemplaire(2, "alise", "karoll", 
-				new Date(), "978-966-2046-62-5", EnumStatusExemplaire.DISPONIBLE));
-		exemplaireDB.put(3, new Exemplaire(3, "asterix", "depardieu", 
-				new Date(), "978-966-2046-92-2", EnumStatusExemplaire.DISPONIBLE));
-		exemplaireDB.put(4, new Exemplaire(4, "rubbit", "unknown", 
-				new Date(), "978-1-56619-909-4", EnumStatusExemplaire.DISPONIBLE));
-
+	public ExemplaireDAO() throws IOException {
+		this(ConnectionFactory.getDbConnection());
 	}
-	public Exemplaire findByKey(int id) {
-		return exemplaireDB.get(id);
+	public ExemplaireDAO(Connection connection) {
+		this.connection = connection;
 	}
 	
-	public int insertExemplaire(Exemplaire ex) {
-		if (ex == null) return -1;
-		int max = exemplaireDB.keySet().stream()
-				.max(Comparator.comparing(Integer::valueOf)).get();
-		exemplaireDB.put(++max, ex);
-		return max;
+	public Exemplaire findByKey(int id) throws SQLException {
+		connection.setAutoCommit(false);
+		Statement statement = connection.createStatement();
+		ResultSet resultSet = statement.executeQuery("SELECT "
+				+ "livre.titre, exemplaire.dateachat, exemplaire.isbn, exemplaire.status "
+				+ "from exemplaire join livre on exemplaire.isbn = livre.isbn "
+				+ "where exemplaire.idexemplaire = " + id);
+		if (resultSet.next()) {
+			return new Exemplaire(id, resultSet.getString(1), null, 
+					new java.util.Date(resultSet.getDate(2).getTime()), 
+					resultSet.getString(3), 
+					EnumStatusExemplaire.valueOf(resultSet.getString(4)));
+			//todo close statement
+		}
+		connection.rollback();
+		return null;
 	}
 	
-	public void updateExemplaire(Exemplaire ex) {
-		exemplaireDB.replace(ex.getIdExemplaire(), ex);
+	public List<Exemplaire> findAll() throws SQLException {
+		connection.setAutoCommit(false);
+		Statement statement = connection.createStatement();
+		ResultSet resultSet = statement.executeQuery("SELECT exemplaire.idexemplaire, "
+				+ "livre.titre, exemplaire.dateachat, exemplaire.isbn, exemplaire.status "
+				+ "from exemplaire join livre on exemplaire.isbn = livre.isbn");
+		ArrayList<Exemplaire> exemplaires = new ArrayList<Exemplaire>();
+		while (resultSet.next()) {
+			exemplaires.add(new Exemplaire(resultSet.getInt(1), resultSet.getString(2), null, 
+					new java.util.Date(resultSet.getDate(3).getTime()), 
+					resultSet.getString(4), 
+					EnumStatusExemplaire.valueOf(resultSet.getString(5))));
+		}
+		statement.close();
+		return exemplaires;
 	}
 	
-	public void deleteExemplaire(Exemplaire ex) {
-		exemplaireDB.remove(ex.getIdExemplaire());
-	}
-	public void deleteExemplaire(int id) {
-		exemplaireDB.remove(id);
-	}
-	
-	public static void main(String[] args) {
-		ExemplaireDAO exDAO = new ExemplaireDAO();
-		System.out.println(exDAO.findByKey(0));
-		int lastID = exDAO.insertExemplaire(new Exemplaire(0, "Title de livre", "Autor", new Date(), 
-				"978-985-6020-09-7", EnumStatusExemplaire.DISPONIBLE));
-		System.out.println("(insertExemplaire, lastID : " + lastID + ") " + exDAO.findByKey(lastID));
+	public static void main(String[] args) throws IOException, SQLException {
+		ExemplaireDAO exDAO = new ExemplaireDAO(ConnectionFactory.getDbConnection());
+		System.out.println(exDAO.findByKey(1));
+		System.out.println("----------------");
+		System.out.println(exDAO.findAll());
 		
 	}
 }
