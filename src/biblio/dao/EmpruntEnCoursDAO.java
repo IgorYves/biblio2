@@ -1,35 +1,100 @@
 package biblio.dao;
 
-import java.util.Date;
+import java.io.IOException;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 
 import biblio.business.BiblioException;
 import biblio.business.EmpruntEnCours;
 import biblio.business.Exemplaire;
 import biblio.business.Utilisateur;
 
-public class EmpruntEnCoursDAO extends EmpruntEnCours {
-	private int idExemplaire;
-	private int idUtilisateur;
-	public EmpruntEnCoursDAO(Utilisateur emprunteur, Exemplaire exemplaire,
-			Date dateEmprunt, int idExemplaire, int idUtilisateur)
-			throws BiblioException {
-		super(emprunteur, exemplaire, dateEmprunt);
-		this.idExemplaire = idExemplaire;
-		this.idUtilisateur = idUtilisateur;
-	}
-
-
-
-	public EmpruntEnCoursDAO(Utilisateur emprunteur, Exemplaire exemplaire,
-			Date dateEmprunt) throws BiblioException {
-		super(emprunteur, exemplaire, dateEmprunt);
-		// TODO Auto-generated constructor stub
-	}
-
+public class EmpruntEnCoursDAO {
+	private Connection connection;
 	
+	public EmpruntEnCoursDAO() throws IOException {
+		this(ConnectionFactory.getDbConnection());
+	}
+	public EmpruntEnCoursDAO(Connection connection) {
+		this.connection = connection;
+	}
+	
+	public boolean insertEmpruntEnCours(Utilisateur user, Exemplaire exemplaire) 
+			throws SQLException {
+		connection.setAutoCommit(false);
+		Statement statement = connection.createStatement();
+		statement.executeUpdate("insert into empruntencours "
+				+ "values (" + exemplaire.getIdExemplaire()
+				+ ", " + user.getIdUtilisateur() + ", sysdate)");
+		if (statement.getWarnings() == null) {
+			connection.commit();
+			statement.close();
+			return true;
+		}
+		else {
+			connection.rollback();
+			statement.close();
+			return false;
+		}
+	}
+	
+	public boolean insertEmpruntEnCours(EmpruntEnCours empruntEnCours) throws SQLException {
+		connection.setAutoCommit(false);
+		Statement statement = connection.createStatement();
+		statement.executeUpdate("insert into empruntencours "
+				+ "values (" + empruntEnCours.getExemplaire().getIdExemplaire()
+				+ ", " + empruntEnCours.getEmprunteur().getIdUtilisateur() + ", sysdate)");
+		if (statement.getWarnings() == null) {
+			connection.commit();
+			statement.close();
+			return true;
+		}
+		else {
+			connection.rollback();
+			statement.close();
+			return false;
+		}
+	}
+	
+	public EmpruntEnCoursDB findByKey(int idExemplaire) 
+			throws SQLException, BiblioException, IOException {
+		connection.setAutoCommit(false);
+		Statement statement = connection.createStatement();
+		ResultSet resultSet = statement.executeQuery("SELECT * from empruntencours "
+				+ "where idexemplaire = " + idExemplaire);
+		if (resultSet.next()) {
+			return new EmpruntEnCoursDB(resultSet.getInt("idexemplaire"), 
+					resultSet.getInt("idutilisateur"), 
+					new java.util.Date(resultSet.getDate("datemprunt").getTime()));
+			//todo close statement
+		}
+		connection.rollback();
+		return null;
+	}
+	
+	public List<EmpruntEnCoursDB> findByUtilisateur(Utilisateur user) 
+			throws SQLException, BiblioException, IOException {
+		List<EmpruntEnCoursDB> empruntsEnCoursDB = new ArrayList<EmpruntEnCoursDB>();
+		connection.setAutoCommit(false);
+		Statement statement = connection.createStatement();
+		ResultSet resultSet = statement.executeQuery("SELECT * from empruntencours "
+				+ "where idutilisateur = " + user.getIdUtilisateur());
+		while (resultSet.next()) {
+			empruntsEnCoursDB.add(new EmpruntEnCoursDB(resultSet.getInt("idexemplaire"), 
+					resultSet.getInt("idutilisateur"), 
+					new java.util.Date(resultSet.getDate("datemprunt").getTime())));
+			//todo close statement
+		}
+		statement.close();
+		return empruntsEnCoursDB;
+	}
 	
 	public static void main(String[] args) {
-		// TODO Auto-generated method stub
+		
 
 	}
 

@@ -54,7 +54,7 @@ public class ConnectionFactory {
 	public static Connection getConnectionSansAutoCommit(String driver, 
 								String url, String user, String pwd) throws SQLException {
 		Connection returnConnection = getConnectionSansAutoCommit(driver, url, user, pwd);
-		returnConnection.setAutoCommit(false);	
+		returnConnection.setAutoCommit(false);
 		return	returnConnection;
 	}
 	
