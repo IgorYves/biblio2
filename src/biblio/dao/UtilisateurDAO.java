@@ -83,7 +83,7 @@ public class UtilisateurDAO {
 		ResultSet resultSet = statement.executeQuery("select * from utilisateur "
 				+ "left join adherent on utilisateur.IDUTILISATEUR=adherent.IDUTILISATEUR "
 				+ "left join employe on utilisateur.IDUTILISATEUR = employe.IDUTILISATEUR");
-		ArrayList<Utilisateur> utilisateurs = new ArrayList<Utilisateur>();
+		List<Utilisateur> utilisateurs = new ArrayList<Utilisateur>();
 		Utilisateur user = null;
 		while (resultSet.next()) {
 			if ((resultSet.getString("CATEGORIEUTILISATEUR"))
