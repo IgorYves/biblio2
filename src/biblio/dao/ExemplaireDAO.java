@@ -56,6 +56,24 @@ public class ExemplaireDAO {
 		return exemplaires;
 	}
 	
+	public List<Exemplaire> findAllDisponibles() throws SQLException {
+		connection.setAutoCommit(false);
+		Statement statement = connection.createStatement();
+		ResultSet resultSet = statement.executeQuery("SELECT exemplaire.idexemplaire, "
+				+ "livre.titre, exemplaire.dateachat, exemplaire.isbn, exemplaire.status "
+				+ "from exemplaire join livre on exemplaire.isbn = livre.isbn "
+				+ "where exemplaire.status='DISPONIBLE'");
+		ArrayList<Exemplaire> exemplaires = new ArrayList<Exemplaire>();
+		while (resultSet.next()) {
+			exemplaires.add(new Exemplaire(resultSet.getInt(1), resultSet.getString(2), null, 
+					new java.util.Date(resultSet.getDate(3).getTime()), 
+					resultSet.getString(4), 
+					EnumStatusExemplaire.valueOf(resultSet.getString(5))));
+		}
+		statement.close();
+		return exemplaires;
+	}
+	
 	public static void main(String[] args) throws IOException, SQLException {
 		ExemplaireDAO exDAO = new ExemplaireDAO(ConnectionFactory.getDbConnection());
 		System.out.println(exDAO.findByKey(1));

@@ -42,22 +42,10 @@ public class EmpruntEnCoursDAO {
 		}
 	}
 	
-	public boolean insertEmpruntEnCours(EmpruntEnCours empruntEnCours) throws SQLException {
-		connection.setAutoCommit(false);
-		Statement statement = connection.createStatement();
-		statement.executeUpdate("insert into empruntencours "
-				+ "values (" + empruntEnCours.getExemplaire().getIdExemplaire()
-				+ ", " + empruntEnCours.getEmprunteur().getIdUtilisateur() + ", sysdate)");
-		if (statement.getWarnings() == null) {
-			connection.commit();
-			statement.close();
-			return true;
-		}
-		else {
-			connection.rollback();
-			statement.close();
-			return false;
-		}
+	public boolean insertEmpruntEnCours(EmpruntEnCours empruntEnCours) 
+			throws SQLException {
+		return insertEmpruntEnCours(empruntEnCours.getEmprunteur(), 
+									empruntEnCours.getExemplaire());
 	}
 	
 	public EmpruntEnCoursDB findByKey(int idExemplaire) 

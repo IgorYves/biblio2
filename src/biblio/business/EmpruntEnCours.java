@@ -7,7 +7,8 @@ public class EmpruntEnCours {
 	private Utilisateur emprunteur;
 	private Exemplaire exemplaire;
 	
-	public EmpruntEnCours(Utilisateur emprunteur, Exemplaire exemplaire, Date dateEmprunt) throws BiblioException {
+	public EmpruntEnCours(Utilisateur emprunteur, Exemplaire exemplaire, Date dateEmprunt) 
+			throws BiblioException {
 		super();
 		this.dateEmprunt = dateEmprunt;
 		this.emprunteur = emprunteur;

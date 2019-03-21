@@ -50,6 +50,7 @@ public class Exemplaire {
 	}
 	public void setEmpruntEnCours(EmpruntEnCours empruntEnCours) {
 		this.empruntEnCours = empruntEnCours;
+		setStatus(EnumStatusExemplaire.PRETE);
 	}
 	
 	@Override
