@@ -31,7 +31,6 @@ public class EmpruntEnCoursDAO {
 				+ "values (" + exemplaire.getIdExemplaire()
 				+ ", " + user.getIdUtilisateur() + ", sysdate)");
 		if (statement.getWarnings() == null) {
-			connection.commit();
 			statement.close();
 			return true;
 		}

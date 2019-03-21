@@ -74,6 +74,24 @@ public class ExemplaireDAO {
 		return exemplaires;
 	}
 	
+	public boolean updateExemplaireStatus(Exemplaire exemplaire) throws SQLException {
+		connection.setAutoCommit(false);
+		Statement statement = connection.createStatement();
+		statement.executeUpdate("update exemplaire set status = '" + exemplaire.getStatus() + "'"
+				+ " where idexemplaire = " + exemplaire.getIdExemplaire());
+		if (statement.getWarnings() == null) {
+			statement.close();
+			return true;
+		}
+		else {
+			connection.rollback();
+			statement.close();
+			return false;
+		}
+	}
+
+	
+	
 	public static void main(String[] args) throws IOException, SQLException {
 		ExemplaireDAO exDAO = new ExemplaireDAO(ConnectionFactory.getDbConnection());
 		System.out.println(exDAO.findByKey(1));

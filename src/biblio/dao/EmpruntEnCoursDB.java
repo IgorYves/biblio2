@@ -1,6 +1,7 @@
 package biblio.dao;
 
 import java.io.IOException;
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Date;
 
@@ -20,10 +21,11 @@ public class EmpruntEnCoursDB extends EmpruntEnCours {
 		this.idUtilisateur = idUtilisateur;
 	}
 	
-	public EmpruntEnCoursDB(int idUtilisateur, int idExemplaire, Date dateEmprunt)
+	public EmpruntEnCoursDB(int idUtilisateur, int idExemplaire, 
+							Date dateEmprunt, Connection connection)
 			throws BiblioException, SQLException, IOException {
-		this((new UtilisateurDAO(ConnectionFactory.getDbConnection())).findByKey(idUtilisateur), 
-				(new ExemplaireDAO(ConnectionFactory.getDbConnection())).findByKey(idExemplaire), 
+		this((new UtilisateurDAO(connection)).findByKey(idUtilisateur), 
+				(new ExemplaireDAO(connection)).findByKey(idExemplaire), 
 				dateEmprunt, idExemplaire, idUtilisateur);
 	}
 

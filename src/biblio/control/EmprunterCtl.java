@@ -59,24 +59,38 @@ public class EmprunterCtl {
 			boutons[i] = exemplairesArr[i].getTitle() 
 					+ " (" + exemplairesArr[i].getIdExemplaire() + ")";
 		}
-		userRetour = jop.showOptionDialog(jop, 
-				boutons.length>0?"Chosissez l'exemplaire à emprunter":
-					"Il n'y a plus des exemplaires à emprunter", 
-					"Choix livre",
+		userRetour = -1;
+		if (boutons.length>0) {
+			userRetour = jop.showOptionDialog(jop, 
+				"Chosissez l'exemplaire à emprunter", "Choix livre",
 				jop.YES_NO_CANCEL_OPTION, //DEFAULT_OPTION, YES_NO_OPTION, YES_NO_CANCEL_OPTION, OK_CANCEL_OPTION
 				jop.QUESTION_MESSAGE, //ERROR_MESSAGE, INFORMATION_MESSAGE, WARNING_MESSAGE, QUESTION_MESSAGE, PLAIN_MESSAGE
 				null, boutons, boutons[0]);
-		//x -> -1; index of boutons Array
-		if(userRetour == jop.CLOSED_OPTION)System.exit(1);
+			//x -> -1; index of boutons Array
+			if(userRetour == jop.CLOSED_OPTION)System.exit(1);
+		}
+		else {
+			jop.showMessageDialog(jop, "Il n'y a plus des exemplaires à emprunter", 
+					"Pas de livres", jop.ERROR_MESSAGE);
+		}
+		if (userRetour == -1)System.exit(1);
 		exemplaireId = exemplairesArr[userRetour].getIdExemplaire();
 		System.out.println(exemplaireId);
 		
 		EmpruntEnCoursDAO empruntEnCoursDAO = new EmpruntEnCoursDAO(connection);
 		System.out.println(userDAO.findByKey(emprunteurId));
 		
-		EmpruntEnCours empruntEnCours = new EmpruntEnCours(userDAO.findByKey(emprunteurId), 
-				exDAO.findByKey(exemplaireId), new Date());
-		empruntEnCoursDAO.insertEmpruntEnCours(empruntEnCours);
+		Utilisateur user1 = userDAO.findByKey(emprunteurId);
+		if (user1.isConditionsPretAcceptees()) {
+			Exemplaire exemplaire1 = exDAO.findByKey(exemplaireId);
+			EmpruntEnCours empruntEnCours = new EmpruntEnCours(user1, exemplaire1, new Date());
+			empruntEnCoursDAO.insertEmpruntEnCours(empruntEnCours);
+			user1.addEmpruntEnCours(empruntEnCours);
+			exDAO.updateExemplaireStatus(exemplaire1);
+		}
+		else {
+			
+		}
 		
 		
 		
