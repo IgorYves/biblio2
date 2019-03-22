@@ -6,6 +6,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import biblio.business.Adherent;
@@ -106,6 +107,18 @@ public class UtilisateurDAO {
 			utilisateurs.add(this.findByKey(userId));
 		}
 		
+		statement.close();
+		return utilisateurs;
+	}
+
+	public HashMap<Integer, String> ListAllUsers() throws SQLException, BiblioException, IOException {
+		connection.setAutoCommit(false);
+		Statement statement = connection.createStatement();
+		ResultSet resultSet = statement.executeQuery("select idutilisateur, NOM, PRENOM from utilisateur");
+		HashMap<Integer, String> utilisateurs = new HashMap<Integer, String>();
+		while (resultSet.next()) {
+			utilisateurs.put(resultSet.getInt(1), resultSet.getString(2) + " " + resultSet.getString(3));
+		}
 		statement.close();
 		return utilisateurs;
 	}

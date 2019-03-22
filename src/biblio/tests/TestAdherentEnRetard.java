@@ -10,8 +10,8 @@ import biblio.business.BiblioException;
 import biblio.business.EmpruntEnCours;
 import biblio.business.Exemplaire;
 import biblio.business.Utilisateur;
-import biblio.dao.ExemplaireDAO;
-import biblio.dao.UtilisateurDAO;
+import biblio.dao.ExemplaireDaoMoc;
+import biblio.dao.UtilisateurDaoMoc;
 
 public class TestAdherentEnRetard {
 
@@ -42,14 +42,14 @@ public class TestAdherentEnRetard {
 		
 		if (!autentifOK) System.exit(0);
 		
-		ExemplaireDAO exDAO = new ExemplaireDAO();
+		ExemplaireDaoMoc exDAO = new ExemplaireDaoMoc();
 		System.out.println("--------------- debut des tests");
 		
 		Exemplaire ex1 = exDAO.findByKey(0);
 		System.out.println("ExemplaireDAO find by key (0) -> ex1 >>>> " + ex1);
 		
 		System.out.println();
-		UtilisateurDAO userDAO = new UtilisateurDAO();
+		UtilisateurDaoMoc userDAO = new UtilisateurDaoMoc();
 
 		Utilisateur ad1 = userDAO.findByKey(0);
 		System.out.println("UtilisateurDAO find by key (0) -> ad1 >>>> " + ad1);

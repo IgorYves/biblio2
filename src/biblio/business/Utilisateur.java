@@ -30,7 +30,9 @@ public abstract class Utilisateur extends Personne {
 	}
 	
 	public void addEmpruntEnCours(EmpruntEnCours ep) {
-		empruntsEnCours.add(ep);
+		if (!empruntsEnCours.contains(ep)) {
+			empruntsEnCours.add(ep);
+		}
 	}
 	
 	public ArrayList<EmpruntEnCours> getEmpruntEnCours() {

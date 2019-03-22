@@ -11,8 +11,8 @@ import biblio.business.BiblioException;
 import biblio.business.EmpruntEnCours;
 import biblio.business.Exemplaire;
 import biblio.business.Utilisateur;
-import biblio.dao.ExemplaireDAO;
-import biblio.dao.UtilisateurDAO;
+import biblio.dao.ExemplaireDaoMoc;
+import biblio.dao.UtilisateurDaoMoc;
 import biblio.gui.BiblioFrame;
 
 public class TestDeBase {
@@ -57,27 +57,27 @@ public class TestDeBase {
 		System.out.println();
 		
 		if (autentifOK) {
-			ExemplaireDAO exDAO = new ExemplaireDAO();
+			ExemplaireDaoMoc exDaoMoc = new ExemplaireDaoMoc();
 			System.out.println("--------------- debut des tests");
 	
-			Exemplaire ex1 = exDAO.findByKey(0);
-			msg = "ExemplaireDAO find by key (0) -> ex1 >>>> " + ex1;
+			Exemplaire ex1 = exDaoMoc.findByKey(0);
+			msg = "ExemplaireDaoMoc find by key (0) -> ex1 >>>> " + ex1;
 			System.out.println(msg);
 			biblioFrame.jLabel.setText(msg);
 			
-			Exemplaire ex2 = exDAO.findByKey(1);
-			msg = "ExemplaireDAO find by key (1) -> ex2 >>>> " + ex2;
+			Exemplaire ex2 = exDaoMoc.findByKey(1);
+			msg = "ExemplaireDaoMoc find by key (1) -> ex2 >>>> " + ex2;
 			System.out.println(msg);
 			biblioFrame.jLabel.setText(msg);
 			
 			System.out.println();
-			UtilisateurDAO userDAO = new UtilisateurDAO();
+			UtilisateurDaoMoc userDaoMoc = new UtilisateurDaoMoc();
 	
-			Utilisateur ad1 = userDAO.findByKey(0);
-			System.out.println("UtilisateurDAO find by key (0) -> ad1 >>>> " + ad1);
+			Utilisateur ad1 = userDaoMoc.findByKey(0);
+			System.out.println("UtilisateurDaoMoc find by key (0) -> ad1 >>>> " + ad1);
 	
-			Utilisateur em2 = userDAO.findByKey(1);
-			System.out.println("UtilisateurDAO find by key (1) -> em2 >>>> " + em2);
+			Utilisateur em2 = userDaoMoc.findByKey(1);
+			System.out.println("UtilisateurDaoMoc find by key (1) -> em2 >>>> " + em2);
 	
 			try {
 				EmpruntEnCours empruntEnCours1 = new EmpruntEnCours(ad1, ex1,

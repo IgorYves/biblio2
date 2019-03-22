@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 
 import javax.swing.JOptionPane;
@@ -31,13 +32,11 @@ public class EmprunterCtl {
 		String[] boutons;
 		
 		UtilisateurDAO userDAO = new UtilisateurDAO(connection);
-		List<Utilisateur> users = userDAO.findAll();
-		Utilisateur[] usersArr = new Utilisateur[users.size()];
-		usersArr = users.toArray(usersArr);
+		HashMap<Integer, String> users = userDAO.ListAllUsers();
+		int[] buttons2Users = new int[users.size()];
 		boutons = new String[users.size()];
 		for (int i = 0; i < boutons.length; i++) {
-			boutons[i] = usersArr[i].getNom() + " " + usersArr[i].getPrenom() 
-					+ " (" + usersArr[i].getIdUtilisateur() + ")";
+			boutons[i] = users.get(buttons2Users[i]) + " (" + buttons2Users[i] + ")";
 		}
 		userRetour = jop.showOptionDialog(jop, 
 				"Chosissez l'utilisateur qui va emprunter une livre", 
@@ -47,7 +46,7 @@ public class EmprunterCtl {
 				null, boutons, boutons[0]);
 		//x -> -1; index of boutons Array
 		if(userRetour == jop.CLOSED_OPTION)System.exit(1);
-		emprunteurId = usersArr[userRetour].getIdUtilisateur();
+		emprunteurId = buttons2Users[userRetour];
 		System.out.println(emprunteurId);
 		
 		ExemplaireDAO exDAO = new ExemplaireDAO(connection);
@@ -78,18 +77,21 @@ public class EmprunterCtl {
 		System.out.println(exemplaireId);
 		
 		EmpruntEnCoursDAO empruntEnCoursDAO = new EmpruntEnCoursDAO(connection);
-		System.out.println(userDAO.findByKey(emprunteurId));
 		
 		Utilisateur user1 = userDAO.findByKey(emprunteurId);
+		System.out.println(user1);
+		System.exit(1);
 		if (user1.isConditionsPretAcceptees()) {
 			Exemplaire exemplaire1 = exDAO.findByKey(exemplaireId);
 			EmpruntEnCours empruntEnCours = new EmpruntEnCours(user1, exemplaire1, new Date());
 			empruntEnCoursDAO.insertEmpruntEnCours(empruntEnCours);
 			user1.addEmpruntEnCours(empruntEnCours);
 			exDAO.updateExemplaireStatus(exemplaire1);
+			jop.showMessageDialog(jop, "Enregistrement est OK", "Utilisateur", jop.INFORMATION_MESSAGE);
 		}
 		else {
-			
+			jop.showMessageDialog(jop, "ERROR_MESSAGE : conditions de pret ne sont pas acceptées", 
+					"Utilisateur", jop.ERROR_MESSAGE);
 		}
 		
 		
