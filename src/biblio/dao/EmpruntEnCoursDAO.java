@@ -6,6 +6,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import biblio.business.BiblioException;
@@ -81,6 +82,19 @@ public class EmpruntEnCoursDAO {
 		return empruntEnCoursDB;
 	}
 	
+	public HashMap<Integer, String> ListAllEmpruntEnCours() throws SQLException, BiblioException, IOException {
+		connection.setAutoCommit(false);
+		Statement statement = connection.createStatement();
+		ResultSet resultSet = statement.executeQuery("select * from empruntencours");
+		HashMap<Integer, String> empruntEnCours = new HashMap<Integer, String>();
+		while (resultSet.next()) {
+			empruntEnCours.put(resultSet.getInt(1), 
+					resultSet.getString(3) + " ; " + "user-" + resultSet.getInt(2));
+		}
+		statement.close();
+		return empruntEnCours;
+	}
+	
 	public List<EmpruntEnCoursDB> findByUtilisateur(Utilisateur user) 
 			throws SQLException, BiblioException, IOException {
 		List<EmpruntEnCoursDB> empruntsEnCoursDB = new ArrayList<EmpruntEnCoursDB>();
@@ -97,6 +111,56 @@ public class EmpruntEnCoursDAO {
 		}
 		statement.close();
 		return empruntsEnCoursDB;
+	}
+	
+	public boolean madeReturn(int idExemplaire) throws SQLException {
+		int warnings = 0;
+		int idUser = 0;
+		java.util.Date dateEmprunt = null;
+		connection.setAutoCommit(false);
+		Statement statement = connection.createStatement();
+		
+		ResultSet resultSet = statement.executeQuery("SELECT * from empruntencours "
+				+ "where idexemplaire = " + idExemplaire);
+		if (resultSet.next()) {
+			idUser = resultSet.getInt("idutilisateur"); 
+			dateEmprunt = new java.util.Date(resultSet.getDate("dateemprunt").getTime());
+		}
+		int nextValue = 0;
+		resultSet = statement.executeQuery("SELECT max(idempruntarchive) "
+				+ "from empruntencours");
+		if (resultSet.next()) {
+			nextValue = 1 + resultSet.getInt(1);
+		}
+		
+		System.out.println("insert into empruntarchive "
+				+ "values (" + nextValue + ", to_date('" + dateEmprunt + "','DD-MM-YYYY'), "
+						+ "sysdate, " + idExemplaire + "" + idUser + ")");
+		statement.executeUpdate("insert into empruntarchive "
+				+ "values (" + nextValue + ", to_date('" + dateEmprunt + "','DD-MM-YYYY'), "
+						+ "sysdate, " + idExemplaire + "" + idUser + ")");
+		if (statement.getWarnings() != null) {
+			warnings++;
+		};
+		statement.executeUpdate("delete from empruntencours where idexemplaire = " + idExemplaire);
+		if (statement.getWarnings() != null) {
+			warnings++;
+		};
+		statement.executeUpdate("update exemplaire set status='DISPONIBLE' "
+									+ "where idexemplaire = " + idExemplaire);
+		if (statement.getWarnings() != null) {
+			warnings++;
+		};
+		
+		if (warnings == 0) {
+			statement.close();
+			return true;
+		}
+		else {
+			connection.rollback();
+			statement.close();
+			return false;
+		}
 	}
 	
 	public static void main(String[] args) {

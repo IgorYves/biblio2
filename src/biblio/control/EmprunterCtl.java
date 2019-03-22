@@ -16,7 +16,6 @@ import biblio.business.Exemplaire;
 import biblio.business.Utilisateur;
 import biblio.dao.ConnectionFactory;
 import biblio.dao.EmpruntEnCoursDAO;
-import biblio.dao.EmpruntEnCoursDB;
 import biblio.dao.ExemplaireDAO;
 import biblio.dao.UtilisateurDAO;
 
@@ -102,13 +101,13 @@ public class EmprunterCtl {
 		}
 		
 		EmpruntEnCoursDAO empruntEnCoursDAO = new EmpruntEnCoursDAO(connection);
-		List<EmpruntEnCoursDB> empruntEnCoursDB = empruntEnCoursDAO.findAll();
-		EmpruntEnCoursDB[] empruntEnCoursDBArr = new EmpruntEnCoursDB[empruntEnCoursDB.size()];
-		empruntEnCoursDBArr = empruntEnCoursDB.toArray(empruntEnCoursDBArr);
-		boutons = new String[empruntEnCoursDB.size()];
+		HashMap<Integer, String> empruntEnCours = empruntEnCoursDAO.ListAllEmpruntEnCours();
+		Integer[] buttons2emprunts = new Integer[empruntEnCours.size()];
+		Set<Integer> empruntEnCoursKeys = empruntEnCours.keySet();
+		buttons2emprunts = empruntEnCoursKeys.toArray(buttons2emprunts);
+		boutons = new String[empruntEnCours.size()];
 		for (int i = 0; i < boutons.length; i++) {
-			boutons[i] = empruntEnCoursDBArr[i].getEmprunteur().getNom() 
-					+ " (" + empruntEnCoursDBArr[i].getExemplaire().getIsbn() + ")";
+			boutons[i] = "ex-" + buttons2emprunts[i] + " ; " + empruntEnCours.get(buttons2emprunts[i]);
 		}
 		
 		userRetour = jop.showOptionDialog(jop, 
@@ -119,6 +118,11 @@ public class EmprunterCtl {
 				null, boutons, boutons[0]);
 		//x -> -1; index of boutons Array
 		
+		if(userRetour != jop.CLOSED_OPTION) {
+			exemplaireId = buttons2emprunts[userRetour];
+			System.out.println(exemplaireId);
+			empruntEnCoursDAO.madeReturn(exemplaireId);
+		}
 		
 		connection.commit();
 		connection.close();

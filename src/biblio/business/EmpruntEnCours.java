@@ -8,12 +8,18 @@ public class EmpruntEnCours {
 	private Exemplaire exemplaire;
 	
 	public EmpruntEnCours(Utilisateur emprunteur, Exemplaire exemplaire, Date dateEmprunt) 
-			throws BiblioException {
+			throws BiblioException 
+	{
 		super();
 		this.dateEmprunt = dateEmprunt;
 		this.emprunteur = emprunteur;
 		this.exemplaire = exemplaire;
+		
 		if (this.emprunteur.isConditionsPretAcceptees()) {
+			this.emprunteur.addEmpruntEnCours(this);
+			this.exemplaire.setEmpruntEnCours(this);
+		}
+		else if (((new Date()).getTime() - dateEmprunt.getTime()) > (60*60*1000)) {
 			this.emprunteur.addEmpruntEnCours(this);
 			this.exemplaire.setEmpruntEnCours(this);
 		}
