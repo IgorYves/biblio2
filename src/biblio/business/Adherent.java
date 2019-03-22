@@ -32,12 +32,12 @@ public class Adherent extends Utilisateur {
 	@Override
 	public int getNbRetards() {
 		ArrayList<EmpruntEnCours> empruntsEnCours = getEmpruntEnCours();
-		int dayToday = (int) ((new Date().getTime()) 
-							- (new Date().getTime())%(24*60*60*1000));
+		long dayToday = new Date().getTime() - (new Date().getTime())%(24*60*60*1000);
 		return (int) empruntsEnCours.stream()
 					.filter((e)-> dureeMaxPrets < 
-							(int) (dayToday - (e.getDateEmprunt().getTime()
-									- e.getDateEmprunt().getTime()%(24*60*60*1000)))
+							(int) ((dayToday - (e.getDateEmprunt().getTime()
+									- e.getDateEmprunt().getTime()%(24*60*60*1000))) 
+								/ (24*60*60*1000))
 							)
 					.count();
 	}

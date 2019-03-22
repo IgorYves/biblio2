@@ -36,9 +36,11 @@ public class EmpruntEnCours {
 
 	@Override
 	public String toString() {
-		int daysEmprunt = ((int) (((new Date().getTime()) - (new Date().getTime())%(24*60*60*1000)) 
-				- (this.getDateEmprunt().getTime() - this.getDateEmprunt().getTime()%(24*60*60*1000))))
-				/ (24*60*60*1000);
+		long dayToday = new Date().getTime() 
+						- (new Date().getTime())%(24*60*60*1000);
+		long dayEmprunt = this.getDateEmprunt().getTime() 
+						- this.getDateEmprunt().getTime()%(24*60*60*1000);
+		int daysEmprunt = (int) ((dayToday - dayEmprunt) / (24*60*60*1000));
 		return "[(Emprunt) dateEmprunt: " + dateEmprunt
 				+ " (" + daysEmprunt + " jour(s))"
 				+ "; emprunteur: " + emprunteur.getNom() 

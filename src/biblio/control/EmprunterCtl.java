@@ -6,6 +6,7 @@ import java.sql.SQLException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 
 import javax.swing.JOptionPane;
 
@@ -15,6 +16,7 @@ import biblio.business.Exemplaire;
 import biblio.business.Utilisateur;
 import biblio.dao.ConnectionFactory;
 import biblio.dao.EmpruntEnCoursDAO;
+import biblio.dao.EmpruntEnCoursDB;
 import biblio.dao.ExemplaireDAO;
 import biblio.dao.UtilisateurDAO;
 
@@ -33,7 +35,9 @@ public class EmprunterCtl {
 		
 		UtilisateurDAO userDAO = new UtilisateurDAO(connection);
 		HashMap<Integer, String> users = userDAO.ListAllUsers();
-		int[] buttons2Users = new int[users.size()];
+		Integer[] buttons2Users = new Integer[users.size()];
+		Set<Integer> usersKeys = users.keySet();
+		buttons2Users = usersKeys.toArray(buttons2Users);
 		boutons = new String[users.size()];
 		for (int i = 0; i < boutons.length; i++) {
 			boutons[i] = users.get(buttons2Users[i]) + " (" + buttons2Users[i] + ")";
@@ -45,55 +49,75 @@ public class EmprunterCtl {
 				jop.QUESTION_MESSAGE, //ERROR_MESSAGE, INFORMATION_MESSAGE, WARNING_MESSAGE, QUESTION_MESSAGE, PLAIN_MESSAGE
 				null, boutons, boutons[0]);
 		//x -> -1; index of boutons Array
-		if(userRetour == jop.CLOSED_OPTION)System.exit(1);
-		emprunteurId = buttons2Users[userRetour];
-		System.out.println(emprunteurId);
-		
-		ExemplaireDAO exDAO = new ExemplaireDAO(connection);
-		List<Exemplaire> exemplaires = exDAO.findAllDisponibles();
-		Exemplaire[] exemplairesArr = new Exemplaire[exemplaires.size()];
-		exemplairesArr = exemplaires.toArray(exemplairesArr);
-		boutons = new String[exemplaires.size()];
-		for (int i = 0; i < boutons.length; i++) {
-			boutons[i] = exemplairesArr[i].getTitle() 
-					+ " (" + exemplairesArr[i].getIdExemplaire() + ")";
+		if(userRetour != jop.CLOSED_OPTION) {
+			emprunteurId = buttons2Users[userRetour];
+			System.out.println(emprunteurId);
+			
+			ExemplaireDAO exDAO = new ExemplaireDAO(connection);
+			List<Exemplaire> exemplaires = exDAO.findAllDisponibles();
+			Exemplaire[] exemplairesArr = new Exemplaire[exemplaires.size()];
+			exemplairesArr = exemplaires.toArray(exemplairesArr);
+			boutons = new String[exemplaires.size()];
+			for (int i = 0; i < boutons.length; i++) {
+				boutons[i] = exemplairesArr[i].getTitle() 
+						+ " (" + exemplairesArr[i].getIdExemplaire() + ")";
+			}
+			userRetour = -1;
+			if (boutons.length>0) {
+				userRetour = jop.showOptionDialog(jop, 
+					"Chosissez l'exemplaire à emprunter", "Choix livre",
+					jop.YES_NO_CANCEL_OPTION, //DEFAULT_OPTION, YES_NO_OPTION, YES_NO_CANCEL_OPTION, OK_CANCEL_OPTION
+					jop.QUESTION_MESSAGE, //ERROR_MESSAGE, INFORMATION_MESSAGE, WARNING_MESSAGE, QUESTION_MESSAGE, PLAIN_MESSAGE
+					null, boutons, boutons[0]);
+				//x -> -1; index of boutons Array
+				if (userRetour != jop.CLOSED_OPTION) {
+					exemplaireId = exemplairesArr[userRetour].getIdExemplaire();
+					System.out.println(exemplaireId);
+					
+					EmpruntEnCoursDAO empruntEnCoursDAO = new EmpruntEnCoursDAO(connection);
+					
+					Utilisateur user1 = userDAO.findByKey(emprunteurId);
+					System.out.println(user1);
+					System.out.println(user1.isConditionsPretAcceptees());
+					//System.exit(1);
+					if (user1.isConditionsPretAcceptees()) {
+						//System.exit(1);
+						Exemplaire exemplaire1 = exDAO.findByKey(exemplaireId);
+						EmpruntEnCours empruntEnCours = new EmpruntEnCours(user1, exemplaire1, new Date());
+						empruntEnCoursDAO.insertEmpruntEnCours(empruntEnCours);
+						user1.addEmpruntEnCours(empruntEnCours);
+						exDAO.updateExemplaireStatus(exemplaire1);
+						jop.showMessageDialog(jop, "Enregistrement est OK", "Utilisateur", jop.INFORMATION_MESSAGE);
+					}
+					else {
+						jop.showMessageDialog(jop, "ERROR_MESSAGE : conditions de pret ne sont pas acceptées", 
+								"Utilisateur", jop.ERROR_MESSAGE);
+					}
+				}
+			}
+			else {
+				jop.showMessageDialog(jop, "Il n'y a plus des exemplaires à emprunter", 
+						"Pas de livres", jop.ERROR_MESSAGE);
+			}
 		}
-		userRetour = -1;
-		if (boutons.length>0) {
-			userRetour = jop.showOptionDialog(jop, 
-				"Chosissez l'exemplaire à emprunter", "Choix livre",
+		
+		EmpruntEnCoursDAO empruntEnCoursDAO = new EmpruntEnCoursDAO(connection);
+		List<EmpruntEnCoursDB> empruntEnCoursDB = empruntEnCoursDAO.findAll();
+		EmpruntEnCoursDB[] empruntEnCoursDBArr = new EmpruntEnCoursDB[empruntEnCoursDB.size()];
+		empruntEnCoursDBArr = empruntEnCoursDB.toArray(empruntEnCoursDBArr);
+		boutons = new String[empruntEnCoursDB.size()];
+		for (int i = 0; i < boutons.length; i++) {
+			boutons[i] = empruntEnCoursDBArr[i].getEmprunteur().getNom() 
+					+ " (" + empruntEnCoursDBArr[i].getExemplaire().getIsbn() + ")";
+		}
+		
+		userRetour = jop.showOptionDialog(jop, 
+				"Chosissez l'exemplaire de livre à retourner", 
+				"Retour livre",
 				jop.YES_NO_CANCEL_OPTION, //DEFAULT_OPTION, YES_NO_OPTION, YES_NO_CANCEL_OPTION, OK_CANCEL_OPTION
 				jop.QUESTION_MESSAGE, //ERROR_MESSAGE, INFORMATION_MESSAGE, WARNING_MESSAGE, QUESTION_MESSAGE, PLAIN_MESSAGE
 				null, boutons, boutons[0]);
-			//x -> -1; index of boutons Array
-			if(userRetour == jop.CLOSED_OPTION)System.exit(1);
-		}
-		else {
-			jop.showMessageDialog(jop, "Il n'y a plus des exemplaires à emprunter", 
-					"Pas de livres", jop.ERROR_MESSAGE);
-		}
-		if (userRetour == -1)System.exit(1);
-		exemplaireId = exemplairesArr[userRetour].getIdExemplaire();
-		System.out.println(exemplaireId);
-		
-		EmpruntEnCoursDAO empruntEnCoursDAO = new EmpruntEnCoursDAO(connection);
-		
-		Utilisateur user1 = userDAO.findByKey(emprunteurId);
-		System.out.println(user1);
-		System.exit(1);
-		if (user1.isConditionsPretAcceptees()) {
-			Exemplaire exemplaire1 = exDAO.findByKey(exemplaireId);
-			EmpruntEnCours empruntEnCours = new EmpruntEnCours(user1, exemplaire1, new Date());
-			empruntEnCoursDAO.insertEmpruntEnCours(empruntEnCours);
-			user1.addEmpruntEnCours(empruntEnCours);
-			exDAO.updateExemplaireStatus(exemplaire1);
-			jop.showMessageDialog(jop, "Enregistrement est OK", "Utilisateur", jop.INFORMATION_MESSAGE);
-		}
-		else {
-			jop.showMessageDialog(jop, "ERROR_MESSAGE : conditions de pret ne sont pas acceptées", 
-					"Utilisateur", jop.ERROR_MESSAGE);
-		}
-		
+		//x -> -1; index of boutons Array
 		
 		
 		connection.commit();

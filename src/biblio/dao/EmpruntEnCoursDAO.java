@@ -56,12 +56,29 @@ public class EmpruntEnCoursDAO {
 		if (resultSet.next()) {
 			return new EmpruntEnCoursDB(resultSet.getInt("idexemplaire"), 
 					resultSet.getInt("idutilisateur"), 
-					new java.util.Date(resultSet.getDate("datemprunt").getTime()),
+					new java.util.Date(resultSet.getDate("dateemprunt").getTime()),
 					connection);
 			//todo close statement
 		}
 		connection.rollback();
 		return null;
+	}
+	
+	public List<EmpruntEnCoursDB> findAll() throws SQLException, BiblioException, IOException {
+		connection.setAutoCommit(false);
+		Statement statement = connection.createStatement();
+		ResultSet resultSet = statement.executeQuery("select IDEXEMPLAIRE from empruntencours");
+		List<EmpruntEnCoursDB> empruntEnCoursDB = new ArrayList<>();
+		ArrayList<Integer> idexemplaires = new ArrayList<>();
+		while (resultSet.next()) {
+			idexemplaires.add(resultSet.getInt(1));
+		}
+		for (Integer idexemplaire : idexemplaires) {
+			empruntEnCoursDB.add(this.findByKey(idexemplaire));
+		}
+		
+		statement.close();
+		return empruntEnCoursDB;
 	}
 	
 	public List<EmpruntEnCoursDB> findByUtilisateur(Utilisateur user) 
