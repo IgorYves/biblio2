@@ -56,7 +56,8 @@ public class EmpruntEnCoursDAO {
 		if (resultSet.next()) {
 			return new EmpruntEnCoursDB(resultSet.getInt("idexemplaire"), 
 					resultSet.getInt("idutilisateur"), 
-					new java.util.Date(resultSet.getDate("datemprunt").getTime()));
+					new java.util.Date(resultSet.getDate("datemprunt").getTime()),
+					connection);
 			//todo close statement
 		}
 		connection.rollback();
@@ -73,7 +74,8 @@ public class EmpruntEnCoursDAO {
 		while (resultSet.next()) {
 			empruntsEnCoursDB.add(new EmpruntEnCoursDB(resultSet.getInt("idexemplaire"), 
 					resultSet.getInt("idutilisateur"), 
-					new java.util.Date(resultSet.getDate("datemprunt").getTime())));
+					new java.util.Date(resultSet.getDate("datemprunt").getTime()),
+					connection));
 			//todo close statement
 		}
 		statement.close();
