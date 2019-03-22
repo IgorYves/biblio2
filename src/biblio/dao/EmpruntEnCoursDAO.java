@@ -127,8 +127,7 @@ public class EmpruntEnCoursDAO {
 			dateEmprunt = new java.util.Date(resultSet.getDate("dateemprunt").getTime());
 		}
 		int nextValue = 0;
-		resultSet = statement.executeQuery("SELECT max(idempruntarchive) "
-				+ "from empruntencours");
+		resultSet = statement.executeQuery("SELECT count(*) from empruntencours");
 		if (resultSet.next()) {
 			nextValue = 1 + resultSet.getInt(1);
 		}
@@ -137,7 +136,7 @@ public class EmpruntEnCoursDAO {
 				+ "values (" + nextValue + ", to_date('" + dateEmprunt + "','DD-MM-YYYY'), "
 						+ "sysdate, " + idExemplaire + "" + idUser + ")");
 		statement.executeUpdate("insert into empruntarchive "
-				+ "values (" + nextValue + ", to_date('" + dateEmprunt + "','DD-MM-YYYY'), "
+				+ "values (seq_archive.nextval, to_date('" + dateEmprunt + "'), "
 						+ "sysdate, " + idExemplaire + "" + idUser + ")");
 		if (statement.getWarnings() != null) {
 			warnings++;
