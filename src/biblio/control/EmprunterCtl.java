@@ -110,26 +110,32 @@ public class EmprunterCtl {
 			boutons[i] = "ex-" + buttons2emprunts[i] + " ; " + empruntEnCours.get(buttons2emprunts[i]);
 		}
 		
-		userRetour = jop.showOptionDialog(jop, 
-				"Chosissez l'exemplaire de livre à retourner", 
-				"Retour livre",
-				jop.YES_NO_CANCEL_OPTION, //DEFAULT_OPTION, YES_NO_OPTION, YES_NO_CANCEL_OPTION, OK_CANCEL_OPTION
-				jop.QUESTION_MESSAGE, //ERROR_MESSAGE, INFORMATION_MESSAGE, WARNING_MESSAGE, QUESTION_MESSAGE, PLAIN_MESSAGE
-				null, boutons, boutons[0]);
-		//x -> -1; index of boutons Array
-		
-		if(userRetour != jop.CLOSED_OPTION) {
-			exemplaireId = buttons2emprunts[userRetour];
-			System.out.println(exemplaireId);
-			if (empruntEnCoursDAO.madeReturn(exemplaireId)) {
-				jop.showMessageDialog(jop, "Enregistrement de retour est OK", "Retour livre", jop.INFORMATION_MESSAGE);
-			}
-			else {
-				jop.showMessageDialog(jop, "Erreur de retour, rollback effectué", 
-						"Erreur", jop.ERROR_MESSAGE);
-			}
+		if (boutons.length>0) {
+			userRetour = jop.showOptionDialog(jop, 
+					"Chosissez l'exemplaire de livre à retourner", 
+					"Retour livre",
+					jop.YES_NO_CANCEL_OPTION, //DEFAULT_OPTION, YES_NO_OPTION, YES_NO_CANCEL_OPTION, OK_CANCEL_OPTION
+					jop.QUESTION_MESSAGE, //ERROR_MESSAGE, INFORMATION_MESSAGE, WARNING_MESSAGE, QUESTION_MESSAGE, PLAIN_MESSAGE
+					null, boutons, boutons[0]);
+			//x -> -1; index of boutons Array
 			
+			if(userRetour != jop.CLOSED_OPTION) {
+				exemplaireId = buttons2emprunts[userRetour];
+				System.out.println(exemplaireId);
+				if (empruntEnCoursDAO.madeReturn(exemplaireId)) {
+					jop.showMessageDialog(jop, "Enregistrement de retour est OK", "Retour livre", jop.INFORMATION_MESSAGE);
+				}
+				else {
+					jop.showMessageDialog(jop, "Erreur de retour, rollback effectué", 
+							"Erreur", jop.ERROR_MESSAGE);
+				}
+			}
 		}
+		else {
+			jop.showMessageDialog(jop, "Il n'y a plus des exemplaires à retourner", 
+					"Pas de livres", jop.ERROR_MESSAGE);
+		}
+		
 		
 		connection.commit();
 		connection.close();
