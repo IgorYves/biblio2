@@ -116,28 +116,32 @@ public class EmpruntEnCoursDAO {
 	public boolean madeReturn(int idExemplaire) throws SQLException {
 		int warnings = 0;
 		int idUser = 0;
-		java.util.Date dateEmprunt = null;
+		java.sql.Date dateEmprunt = null;
+		String query = null;
 		connection.setAutoCommit(false);
 		Statement statement = connection.createStatement();
 		
 		ResultSet resultSet = statement.executeQuery("SELECT * from empruntencours "
 				+ "where idexemplaire = " + idExemplaire);
 		if (resultSet.next()) {
-			idUser = resultSet.getInt("idutilisateur"); 
-			dateEmprunt = new java.util.Date(resultSet.getDate("dateemprunt").getTime());
+			idUser = resultSet.getInt("idutilisateur");
+			dateEmprunt = resultSet.getDate("dateemprunt");
+			//dateEmprunt = new java.util.Date(resultSet.getDate("dateemprunt").getTime());
 		}
-		int nextValue = 0;
-		resultSet = statement.executeQuery("SELECT count(*) from empruntencours");
-		if (resultSet.next()) {
-			nextValue = 1 + resultSet.getInt(1);
-		}
-		
-		System.out.println("insert into empruntarchive "
-				+ "values (" + nextValue + ", to_date('" + dateEmprunt + "','DD-MM-YYYY'), "
-						+ "sysdate, " + idExemplaire + "" + idUser + ")");
-		statement.executeUpdate("insert into empruntarchive "
-				+ "values (seq_archive.nextval, to_date('" + dateEmprunt + "'), "
-						+ "sysdate, " + idExemplaire + "" + idUser + ")");
+//		int nextValue = 0;
+//		resultSet = statement.executeQuery("SELECT count(*) from empruntarchive");
+//		if (resultSet.next()) {
+//			nextValue = 1 + resultSet.getInt(1);
+//		}
+//		query = "insert into empruntarchive "
+//				+ "values (" + nextValue + ", to_date('" + dateEmprunt + "','YYYY-MM-DD'), "
+//						+ "sysdate, " + idExemplaire + ", " + idUser + ")";
+//		
+		query = "insert into empruntarchive "
+				+ "values (seq_archive.nextval, to_date('" + dateEmprunt + "','YYYY-MM-DD'), "
+						+ "sysdate, " + idExemplaire + ", " + idUser + ")";
+		System.out.println(query);
+		statement.executeUpdate(query);
 		if (statement.getWarnings() != null) {
 			warnings++;
 		};

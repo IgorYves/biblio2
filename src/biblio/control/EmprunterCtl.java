@@ -39,7 +39,7 @@ public class EmprunterCtl {
 		buttons2Users = usersKeys.toArray(buttons2Users);
 		boutons = new String[users.size()];
 		for (int i = 0; i < boutons.length; i++) {
-			boutons[i] = users.get(buttons2Users[i]) + " (" + buttons2Users[i] + ")";
+			boutons[i] = buttons2Users[i] + users.get(buttons2Users[i]);
 		}
 		userRetour = jop.showOptionDialog(jop, 
 				"Chosissez l'utilisateur qui va emprunter une livre", 
@@ -121,7 +121,14 @@ public class EmprunterCtl {
 		if(userRetour != jop.CLOSED_OPTION) {
 			exemplaireId = buttons2emprunts[userRetour];
 			System.out.println(exemplaireId);
-			empruntEnCoursDAO.madeReturn(exemplaireId);
+			if (empruntEnCoursDAO.madeReturn(exemplaireId)) {
+				jop.showMessageDialog(jop, "Enregistrement de retour est OK", "Retour livre", jop.INFORMATION_MESSAGE);
+			}
+			else {
+				jop.showMessageDialog(jop, "Erreur de retour, rollback effectué", 
+						"Erreur", jop.ERROR_MESSAGE);
+			}
+			
 		}
 		
 		connection.commit();

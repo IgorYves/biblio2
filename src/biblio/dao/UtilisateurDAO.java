@@ -114,10 +114,21 @@ public class UtilisateurDAO {
 	public HashMap<Integer, String> ListAllUsers() throws SQLException, BiblioException, IOException {
 		connection.setAutoCommit(false);
 		Statement statement = connection.createStatement();
-		ResultSet resultSet = statement.executeQuery("select idutilisateur, NOM, PRENOM from utilisateur");
+		ResultSet resultSet = statement.executeQuery("select idutilisateur, NOM, PRENOM, CATEGORIEUTILISATEUR "
+				+ "from utilisateur");
 		HashMap<Integer, String> utilisateurs = new HashMap<Integer, String>();
+		String categorie = "";
 		while (resultSet.next()) {
-			utilisateurs.put(resultSet.getInt(1), resultSet.getString(2) + " " + resultSet.getString(3));
+			switch (resultSet.getString(4).toUpperCase()) {
+				case "ADHERENT" :
+					categorie = "A";
+					break;
+				case "EMPLOYE" :
+					categorie = "E";
+					break;
+			}
+			utilisateurs.put(resultSet.getInt(1), categorie + " : " + resultSet.getString(2) 
+					+ " " + resultSet.getString(3));
 		}
 		statement.close();
 		return utilisateurs;
