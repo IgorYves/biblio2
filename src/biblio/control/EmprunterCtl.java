@@ -5,6 +5,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -30,7 +31,9 @@ public class EmprunterCtl {
 		int emprunteurId = 0;
 		int exemplaireId = 0;
 		int userRetour = 0;
+		String userRetourString = null;
 		String[] boutons;
+		String[] options;
 		
 		UtilisateurI userDAO = new UtilisateurDAO(connection);
 		HashMap<Integer, String> users = userDAO.ListAllUsers();
@@ -93,34 +96,46 @@ public class EmprunterCtl {
 								"Utilisateur", jop.ERROR_MESSAGE);
 					}
 				}
+				else {
+					jop.showMessageDialog(jop, "Action annulée", 
+							"Info", jop.INFORMATION_MESSAGE);
+				}
 			}
 			else {
 				jop.showMessageDialog(jop, "Il n'y a plus des exemplaires à emprunter", 
 						"Pas de livres", jop.ERROR_MESSAGE);
 			}
 		}
-		
-		EmpruntEnCoursI empruntEnCoursDAO = new EmpruntEnCoursDAO(connection);
-		HashMap<Integer, String> empruntEnCours = empruntEnCoursDAO.ListAllEmpruntEnCours();
-		Integer[] buttons2emprunts = new Integer[empruntEnCours.size()];
-		Set<Integer> empruntEnCoursKeys = empruntEnCours.keySet();
-		buttons2emprunts = empruntEnCoursKeys.toArray(buttons2emprunts);
-		boutons = new String[empruntEnCours.size()];
-		for (int i = 0; i < boutons.length; i++) {
-			boutons[i] = "ex-" + buttons2emprunts[i] + " ; " + empruntEnCours.get(buttons2emprunts[i]);
+		else {
+			jop.showMessageDialog(jop, "Action annulée", 
+					"Info", jop.INFORMATION_MESSAGE);
 		}
 		
-		if (boutons.length>0) {
-			userRetour = jop.showOptionDialog(jop, 
-					"Chosissez l'exemplaire de livre à retourner", 
-					"Retour livre",
-					jop.YES_NO_CANCEL_OPTION, //DEFAULT_OPTION, YES_NO_OPTION, YES_NO_CANCEL_OPTION, OK_CANCEL_OPTION
-					jop.QUESTION_MESSAGE, //ERROR_MESSAGE, INFORMATION_MESSAGE, WARNING_MESSAGE, QUESTION_MESSAGE, PLAIN_MESSAGE
-					null, boutons, boutons[0]);
-			//x -> -1; index of boutons Array
 			
-			if(userRetour != jop.CLOSED_OPTION) {
-				exemplaireId = buttons2emprunts[userRetour];
+		EmpruntEnCoursI empruntEnCoursDAO = new EmpruntEnCoursDAO(connection);
+		HashMap<Integer, String> empruntEnCours = empruntEnCoursDAO.ListAllEmpruntEnCours();
+		HashMap<String, Integer> empruntString2idExemplaire = new HashMap<>();
+		Set<Integer> empruntEnCoursKeys = empruntEnCours.keySet();
+		options = new String[empruntEnCoursKeys.size()];
+		Integer current = null;
+		Iterator iterator = empruntEnCoursKeys.iterator();
+		int i = 0;
+		while (iterator.hasNext()) {
+			current = (Integer) iterator.next();
+			options[i] = "ex-" + current + " ; " + empruntEnCours.get(current);
+			empruntString2idExemplaire.put(options[i], current);
+			i++;
+		}
+		
+		if (options.length>0) {
+			userRetourString = (String)jop.showInputDialog(jop, 
+					"Chosissez l'exemplaire de livre à retourner", "Retour livre", 
+					jop.QUESTION_MESSAGE,
+					null,//icone
+					options, options[0]);
+			
+			if(userRetourString != null) {
+				exemplaireId = empruntString2idExemplaire.get(userRetourString);
 				System.out.println(exemplaireId);
 				if (empruntEnCoursDAO.madeReturn(exemplaireId)) {
 					jop.showMessageDialog(jop, "Enregistrement de retour est OK", "Retour livre", jop.INFORMATION_MESSAGE);
@@ -129,6 +144,10 @@ public class EmprunterCtl {
 					jop.showMessageDialog(jop, "Erreur de retour, rollback effectué", 
 							"Erreur", jop.ERROR_MESSAGE);
 				}
+			}
+			else {
+				jop.showMessageDialog(jop, "Action annulée", 
+						"Info", jop.INFORMATION_MESSAGE);
 			}
 		}
 		else {
