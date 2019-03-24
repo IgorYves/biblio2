@@ -10,8 +10,9 @@ import java.util.List;
 
 import biblio.business.EnumStatusExemplaire;
 import biblio.business.Exemplaire;
+import biblio.control.ExemplaireI;
 
-public class ExemplaireDAO {
+public class ExemplaireDAO implements ExemplaireI {
 	private Connection connection;
 	
 	public ExemplaireDAO() throws IOException {
@@ -21,6 +22,7 @@ public class ExemplaireDAO {
 		this.connection = connection;
 	}
 	
+	@Override
 	public Exemplaire findByKey(int id) throws SQLException {
 		connection.setAutoCommit(false);
 		Statement statement = connection.createStatement();
@@ -39,6 +41,7 @@ public class ExemplaireDAO {
 		return null;
 	}
 	
+	@Override
 	public List<Exemplaire> findAll() throws SQLException {
 		connection.setAutoCommit(false);
 		Statement statement = connection.createStatement();
@@ -56,6 +59,7 @@ public class ExemplaireDAO {
 		return exemplaires;
 	}
 	
+	@Override
 	public List<Exemplaire> findAllDisponibles() throws SQLException {
 		connection.setAutoCommit(false);
 		Statement statement = connection.createStatement();
@@ -74,6 +78,7 @@ public class ExemplaireDAO {
 		return exemplaires;
 	}
 	
+	@Override
 	public boolean updateExemplaireStatus(Exemplaire exemplaire) throws SQLException {
 		connection.setAutoCommit(false);
 		Statement statement = connection.createStatement();
@@ -93,7 +98,7 @@ public class ExemplaireDAO {
 	
 	
 	public static void main(String[] args) throws IOException, SQLException {
-		ExemplaireDAO exDAO = new ExemplaireDAO(ConnectionFactory.getDbConnection());
+		ExemplaireI exDAO = new ExemplaireDAO(ConnectionFactory.getDbConnection());
 		System.out.println(exDAO.findByKey(1));
 		System.out.println("----------------");
 		System.out.println(exDAO.findAll());

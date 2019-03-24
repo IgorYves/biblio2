@@ -13,8 +13,9 @@ import biblio.business.BiblioException;
 import biblio.business.EmpruntEnCours;
 import biblio.business.Exemplaire;
 import biblio.business.Utilisateur;
+import biblio.control.EmpruntEnCoursI;
 
-public class EmpruntEnCoursDAO {
+public class EmpruntEnCoursDAO implements EmpruntEnCoursI {
 	private Connection connection;
 	
 	public EmpruntEnCoursDAO() throws IOException {
@@ -24,6 +25,7 @@ public class EmpruntEnCoursDAO {
 		this.connection = connection;
 	}
 	
+	@Override
 	public boolean insertEmpruntEnCours(Utilisateur user, Exemplaire exemplaire) 
 			throws SQLException {
 		connection.setAutoCommit(false);
@@ -42,12 +44,14 @@ public class EmpruntEnCoursDAO {
 		}
 	}
 	
+	@Override
 	public boolean insertEmpruntEnCours(EmpruntEnCours empruntEnCours) 
 			throws SQLException {
 		return insertEmpruntEnCours(empruntEnCours.getEmprunteur(), 
 									empruntEnCours.getExemplaire());
 	}
 	
+	@Override
 	public EmpruntEnCoursDB findByKey(int idExemplaire) 
 			throws SQLException, BiblioException, IOException {
 		connection.setAutoCommit(false);
@@ -65,6 +69,7 @@ public class EmpruntEnCoursDAO {
 		return null;
 	}
 	
+	@Override
 	public List<EmpruntEnCoursDB> findAll() throws SQLException, BiblioException, IOException {
 		connection.setAutoCommit(false);
 		Statement statement = connection.createStatement();
@@ -82,6 +87,7 @@ public class EmpruntEnCoursDAO {
 		return empruntEnCoursDB;
 	}
 	
+	@Override
 	public HashMap<Integer, String> ListAllEmpruntEnCours() throws SQLException, BiblioException, IOException {
 		connection.setAutoCommit(false);
 		Statement statement = connection.createStatement();
@@ -95,6 +101,7 @@ public class EmpruntEnCoursDAO {
 		return empruntEnCours;
 	}
 	
+	@Override
 	public List<EmpruntEnCoursDB> findByUtilisateur(Utilisateur user) 
 			throws SQLException, BiblioException, IOException {
 		List<EmpruntEnCoursDB> empruntsEnCoursDB = new ArrayList<EmpruntEnCoursDB>();
@@ -113,6 +120,7 @@ public class EmpruntEnCoursDAO {
 		return empruntsEnCoursDB;
 	}
 	
+	@Override
 	public boolean madeReturn(int idExemplaire) throws SQLException {
 		int warnings = 0;
 		int idUser = 0;

@@ -32,7 +32,7 @@ public class EmprunterCtl {
 		int userRetour = 0;
 		String[] boutons;
 		
-		UtilisateurDAO userDAO = new UtilisateurDAO(connection);
+		UtilisateurI userDAO = new UtilisateurDAO(connection);
 		HashMap<Integer, String> users = userDAO.ListAllUsers();
 		Integer[] buttons2Users = new Integer[users.size()];
 		Set<Integer> usersKeys = users.keySet();
@@ -52,7 +52,7 @@ public class EmprunterCtl {
 			emprunteurId = buttons2Users[userRetour];
 			System.out.println(emprunteurId);
 			
-			ExemplaireDAO exDAO = new ExemplaireDAO(connection);
+			ExemplaireI exDAO = new ExemplaireDAO(connection);
 			List<Exemplaire> exemplaires = exDAO.findAllDisponibles();
 			Exemplaire[] exemplairesArr = new Exemplaire[exemplaires.size()];
 			exemplairesArr = exemplaires.toArray(exemplairesArr);
@@ -73,7 +73,7 @@ public class EmprunterCtl {
 					exemplaireId = exemplairesArr[userRetour].getIdExemplaire();
 					System.out.println(exemplaireId);
 					
-					EmpruntEnCoursDAO empruntEnCoursDAO = new EmpruntEnCoursDAO(connection);
+					EmpruntEnCoursI empruntEnCoursDAO = new EmpruntEnCoursDAO(connection);
 					
 					Utilisateur user1 = userDAO.findByKey(emprunteurId);
 					System.out.println(user1);
@@ -100,7 +100,7 @@ public class EmprunterCtl {
 			}
 		}
 		
-		EmpruntEnCoursDAO empruntEnCoursDAO = new EmpruntEnCoursDAO(connection);
+		EmpruntEnCoursI empruntEnCoursDAO = new EmpruntEnCoursDAO(connection);
 		HashMap<Integer, String> empruntEnCours = empruntEnCoursDAO.ListAllEmpruntEnCours();
 		Integer[] buttons2emprunts = new Integer[empruntEnCours.size()];
 		Set<Integer> empruntEnCoursKeys = empruntEnCours.keySet();
