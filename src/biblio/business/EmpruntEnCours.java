@@ -1,8 +1,9 @@
 package biblio.business;
 
+import java.io.Serializable;
 import java.util.Date;
 
-public class EmpruntEnCours {
+public class EmpruntEnCours implements Serializable {
 	private Date dateEmprunt;
 	private Utilisateur emprunteur;
 	private Exemplaire exemplaire;

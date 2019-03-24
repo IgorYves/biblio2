@@ -1,9 +1,10 @@
 package biblio.business;
 
+import java.io.Serializable;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-public class Exemplaire {
+public class Exemplaire implements Serializable {
 	private int idExemplaire;
 	private Date dateAchat;
 	private String isbn;
