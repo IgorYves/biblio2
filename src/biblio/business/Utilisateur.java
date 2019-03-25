@@ -1,9 +1,10 @@
 package biblio.business;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 
-public abstract class Utilisateur extends Personne {
+public abstract class Utilisateur extends Personne implements Serializable {
 	private int idUtilisateur;
 	private String pwd;
 	private String pseudonyme;

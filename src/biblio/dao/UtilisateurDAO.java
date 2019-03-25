@@ -15,8 +15,9 @@ import biblio.business.Employe;
 import biblio.business.EmpruntEnCours;
 import biblio.business.EnumCategorieEmploye;
 import biblio.business.Utilisateur;
+import biblio.control.UtilisateurI;
 
-public class UtilisateurDAO {
+public class UtilisateurDAO implements UtilisateurI {
 	private Connection connection;
 	
 	public UtilisateurDAO() throws IOException {
@@ -28,6 +29,7 @@ public class UtilisateurDAO {
 	
 	
 
+	@Override
 	public Utilisateur findByKey(int id) 
 			throws SQLException, BiblioException, IOException {
 		connection.setAutoCommit(false);
@@ -94,6 +96,7 @@ public class UtilisateurDAO {
 		return null;
 	}
 
+	@Override
 	public List<Utilisateur> findAll() throws SQLException, BiblioException, IOException {
 		connection.setAutoCommit(false);
 		Statement statement = connection.createStatement();
@@ -111,13 +114,25 @@ public class UtilisateurDAO {
 		return utilisateurs;
 	}
 
+	@Override
 	public HashMap<Integer, String> ListAllUsers() throws SQLException, BiblioException, IOException {
 		connection.setAutoCommit(false);
 		Statement statement = connection.createStatement();
-		ResultSet resultSet = statement.executeQuery("select idutilisateur, NOM, PRENOM from utilisateur");
+		ResultSet resultSet = statement.executeQuery("select idutilisateur, NOM, PRENOM, CATEGORIEUTILISATEUR "
+				+ "from utilisateur");
 		HashMap<Integer, String> utilisateurs = new HashMap<Integer, String>();
+		String categorie = "";
 		while (resultSet.next()) {
-			utilisateurs.put(resultSet.getInt(1), resultSet.getString(2) + " " + resultSet.getString(3));
+			switch (resultSet.getString(4).toUpperCase()) {
+				case "ADHERENT" :
+					categorie = "A";
+					break;
+				case "EMPLOYE" :
+					categorie = "E";
+					break;
+			}
+			utilisateurs.put(resultSet.getInt(1), categorie + " : " + resultSet.getString(2) 
+					+ " " + resultSet.getString(3));
 		}
 		statement.close();
 		return utilisateurs;
@@ -125,7 +140,7 @@ public class UtilisateurDAO {
 
 	public static void main(String[] args) 
 			throws IOException, SQLException, BiblioException {
-		UtilisateurDAO userDAO = new UtilisateurDAO();
+		UtilisateurI userDAO = new UtilisateurDAO();
 		System.out.println(userDAO.findByKey(1));
 		System.out.println(userDAO.findByKey(2));
 		System.out.println("----------------");

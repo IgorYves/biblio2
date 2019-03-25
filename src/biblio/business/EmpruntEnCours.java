@@ -1,8 +1,9 @@
 package biblio.business;
 
+import java.io.Serializable;
 import java.util.Date;
 
-public class EmpruntEnCours {
+public class EmpruntEnCours implements Serializable {
 	private Date dateEmprunt;
 	private Utilisateur emprunteur;
 	private Exemplaire exemplaire;
@@ -16,12 +17,20 @@ public class EmpruntEnCours {
 		this.exemplaire = exemplaire;
 		
 		if (this.emprunteur.isConditionsPretAcceptees()) {
-			this.emprunteur.addEmpruntEnCours(this);
-			this.exemplaire.setEmpruntEnCours(this);
+			if (this.emprunteur != null) {
+				this.emprunteur.addEmpruntEnCours(this);
+			}
+			if (this.exemplaire != null) {
+				this.exemplaire.setEmpruntEnCours(this);
+			}
 		}
 		else if (((new Date()).getTime() - dateEmprunt.getTime()) > (60*60*1000)) {
-			this.emprunteur.addEmpruntEnCours(this);
-			this.exemplaire.setEmpruntEnCours(this);
+			if (this.emprunteur != null) {
+				this.emprunteur.addEmpruntEnCours(this);
+			}
+			if (this.exemplaire != null) {
+				this.exemplaire.setEmpruntEnCours(this);
+			}
 		}
 		else {
 			throw new BiblioException("Conditions de Prets ne sont pas acceptées");
