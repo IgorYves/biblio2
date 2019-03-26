@@ -57,6 +57,11 @@ public class BiblioMainFrame extends JFrame {
 	JPopupMenu jPopupMenu;
 	JOptionPane jop = new JOptionPane();
 	EmprunterCtl emprunterCtl = new EmprunterCtl();
+	JPanel jPanelInt7;
+	JTable jTable2;
+	List<Utilisateur> utilisateurs;
+	List<Exemplaire> exemplaires;
+	List<EmpruntEnCoursDB> empruntsEnCoursDB;
 	
 	public BiblioMainFrame() {
 		this(null, null, null);
@@ -227,7 +232,7 @@ public class BiblioMainFrame extends JFrame {
 			jMBiblioEnregistrer.setMnemonic(KeyEvent.VK_E);
 			jMBiblioEnregistrer.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_E, InputEvent.CTRL_DOWN_MASK));
 			jMBiblioEnregistrer.addActionListener((actionEvent)-> {try {emprunterCtl.enregistrerEmprunt();} 
-									catch (IOException | SQLException | BiblioException e) {};repaint();});
+									catch (IOException | SQLException | BiblioException e) {};jTable2.repaint();});
 			jMBiblio.add(jMBiblioEnregistrer);
 			
 			JMenuItem jMBiblioRetourner = new JMenuItem("Enregistrement Retour", new ImageIcon("imgs/books2.png"));
@@ -304,8 +309,10 @@ public class BiblioMainFrame extends JFrame {
 		JButton bouton = new JButton("Enregistrer un Emprunt");
 		bouton.setIcon(new ImageIcon("imgs/book2.png"));
 		bouton.setRolloverIcon(new ImageIcon("imgs/obook2.png"));
-		bouton.addActionListener((actionEvent)-> {try {emprunterCtl.enregistrerEmprunt();} 
-						catch (IOException | SQLException | BiblioException e) {};repaint();});
+		bouton.addActionListener((actionEvent)-> {try {emprunterCtl.enregistrerEmprunt();
+							reloadExemplaires();} 
+						catch (IOException | SQLException | BiblioException e) {};
+						jPanelInt7.repaint();});
 		jPanelInt2.add(bouton);
 		JButton bouton2 = new JButton("Enregistrer un Retour");
 		bouton2.setIcon(new ImageIcon("imgs/books2.png"));
@@ -357,21 +364,21 @@ public class BiblioMainFrame extends JFrame {
 				data[i][4] = categorie;
 			}
 			
-			JTable jTable = new JTable(data, headers) {
+			JTable jTable1 = new JTable(data, headers) {
 				@Override
 				public boolean getScrollableTracksViewportWidth() {
 					return super.getScrollableTracksViewportWidth()
 							&& getPreferredSize().width < getParent().getWidth();
 				}
 			};
-			//jTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-			//jTable.setFillsViewportHeight(true);
+			//jTable1.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+			//jTable1.setFillsViewportHeight(true);
 			
-			jTable.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
-			for(int i=0; i<jTable.getColumnCount(); i++) {
-				jTable.getColumnModel().getColumn(i).setPreferredWidth(140);
+			jTable1.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+			for(int i=0; i<jTable1.getColumnCount(); i++) {
+				jTable1.getColumnModel().getColumn(i).setPreferredWidth(140);
 			}
-			JScrollPane tableJScrolPane = new JScrollPane(jTable);
+			JScrollPane tableJScrolPane = new JScrollPane(jTable1);
 			tableJScrolPane.setPreferredSize(new Dimension(600, 200));
 			jPanelInt4.add(tableJScrolPane);
 		}
@@ -380,7 +387,7 @@ public class BiblioMainFrame extends JFrame {
 		
 //---------------------------------------------------
 		
-		JPanel jPanelInt7 = new JPanel();
+		jPanelInt7 = new JPanel();
 		//jPanelInt7.setBackground(new Color(130, 150, 150));
 		jPanelInt7.setOpaque(false);
 		gridBagConstraints.gridx = 1;
@@ -402,21 +409,21 @@ public class BiblioMainFrame extends JFrame {
 				
 			}
 			
-			JTable jTable = new JTable(data, headers) {
+			jTable2 = new JTable(data, headers) {
 				@Override
 				public boolean getScrollableTracksViewportWidth() {
 					return super.getScrollableTracksViewportWidth()
 							&& getPreferredSize().width < getParent().getWidth();
 				}
 			};
-			//jTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-			//jTable.setFillsViewportHeight(true);
+			//jTable2.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+			//jTable2.setFillsViewportHeight(true);
 			
-			jTable.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
-			for(int i=0; i<jTable.getColumnCount(); i++) {
-				jTable.getColumnModel().getColumn(i).setPreferredWidth(140);
+			jTable2.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+			for(int i=0; i<jTable2.getColumnCount(); i++) {
+				jTable2.getColumnModel().getColumn(i).setPreferredWidth(140);
 			}
-			JScrollPane tableJScrolPane = new JScrollPane(jTable);
+			JScrollPane tableJScrolPane = new JScrollPane(jTable2);
 			tableJScrolPane.setPreferredSize(new Dimension(600, 200));
 			jPanelInt7.add(tableJScrolPane);
 		}
@@ -445,21 +452,21 @@ public class BiblioMainFrame extends JFrame {
 				data[i][2] = empruntsEnCoursDB.get(i).getDateEmprunt();
 			}
 			
-			JTable jTable = new JTable(data, headers) {
+			JTable jTable3 = new JTable(data, headers) {
 				@Override
 				public boolean getScrollableTracksViewportWidth() {
 					return super.getScrollableTracksViewportWidth()
 							&& getPreferredSize().width < getParent().getWidth();
 				}
 			};
-			//jTable.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-			//jTable.setFillsViewportHeight(true);
+			//jTable3.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+			//jTable3.setFillsViewportHeight(true);
 			
-			jTable.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
-			for(int i=0; i<jTable.getColumnCount(); i++) {
-				jTable.getColumnModel().getColumn(i).setPreferredWidth(140);
+			jTable3.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+			for(int i=0; i<jTable3.getColumnCount(); i++) {
+				jTable3.getColumnModel().getColumn(i).setPreferredWidth(140);
 			}
-			JScrollPane tableJScrolPane = new JScrollPane(jTable);
+			JScrollPane tableJScrolPane = new JScrollPane(jTable3);
 			tableJScrolPane.setPreferredSize(new Dimension(600, 200));
 			jPanelInt10.add(tableJScrolPane);
 		}
@@ -471,6 +478,9 @@ public class BiblioMainFrame extends JFrame {
 		
 	}
 
+	private void reloadExemplaires() throws IOException, SQLException {
+		exemplaires = emprunterCtl.getAllExemplaires();
+	}
 }
 
 class HYJPanel extends JPanel {

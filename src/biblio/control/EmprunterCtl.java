@@ -32,6 +32,7 @@ public class EmprunterCtl {
 	String userRetourString = null;
 	String[] boutons;
 	String[] options;
+	static boolean guiUsed = false;
 	
 	public void enregistrerEmprunt() throws IOException, SQLException, BiblioException {
 		Connection connection = ConnectionFactory.getDbConnection();
@@ -170,7 +171,19 @@ public class EmprunterCtl {
 		connection.close();
 	}
 	
+	public static List<Exemplaire> getAllExemplaires() throws IOException, SQLException {
+		Connection connection = ConnectionFactory.getDbConnection();
+		return getAllExemplaires(connection);
+	}
 	
+	public static List<Exemplaire> getAllExemplaires(Connection connection) throws IOException, SQLException {
+		connection.setAutoCommit(false);
+		ExemplaireI exDAO = new ExemplaireDAO(connection);
+		List<Exemplaire> exemplaires = exDAO.findAll();
+		connection.commit();
+		connection.close();
+		return exemplaires;
+	}
 	
 	public static void main(String[] args) 
 			throws IOException, SQLException, BiblioException {
@@ -183,16 +196,22 @@ public class EmprunterCtl {
 		// x -> -1; ok -> 0 no -> 1; annul -> 2
 		System.out.println(emprunterCtl.userRetour);
 		if (emprunterCtl.userRetour == 0) { //gui
+			guiUsed = true;
 			Connection connection = ConnectionFactory.getDbConnection();
 			connection.setAutoCommit(false);
 			UtilisateurI userDAO = new UtilisateurDAO(connection);
 			List<Utilisateur> users = userDAO.findAll();
-			ExemplaireI exDAO = new ExemplaireDAO(connection);
-			List<Exemplaire> exemplaires = exDAO.findAll();
+//			ExemplaireI exDAO = new ExemplaireDAO(connection);
+//			List<Exemplaire> exemplaires = exDAO.findAll();
 			EmpruntEnCoursI empruntEnCoursDAO = new EmpruntEnCoursDAO(connection);
 			List<EmpruntEnCoursDB> empruntsEnCoursDB = empruntEnCoursDAO.findAll();
 			SwingUtilities.invokeLater(()->{
-				new BiblioMainFrame(users, exemplaires, null);
+				try {
+					new BiblioMainFrame(users, getAllExemplaires(), null);
+				} catch (IOException | SQLException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 			});
 			
 			connection.commit();

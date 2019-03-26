@@ -30,9 +30,14 @@ public abstract class Utilisateur extends Personne implements Serializable {
 		return pseudonyme;
 	}
 	
-	public void addEmpruntEnCours(EmpruntEnCours ep) {
-		if (!empruntsEnCours.contains(ep)) {
-			empruntsEnCours.add(ep);
+	public void addEmpruntEnCours(EmpruntEnCours ep) throws BiblioException {
+		if (isConditionsPretAcceptees()) {
+			if (!empruntsEnCours.contains(ep)) {
+				empruntsEnCours.add(ep);
+			}
+		}
+		else {
+			throw new BiblioException("Conditions de Prets ne sont pas acceptées");
 		}
 	}
 	
