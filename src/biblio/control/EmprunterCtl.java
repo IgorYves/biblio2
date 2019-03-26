@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Set;
 
 import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
 
 import biblio.business.BiblioException;
 import biblio.business.EmpruntEnCours;
@@ -17,23 +18,24 @@ import biblio.business.Exemplaire;
 import biblio.business.Utilisateur;
 import biblio.dao.ConnectionFactory;
 import biblio.dao.EmpruntEnCoursDAO;
+import biblio.dao.EmpruntEnCoursDB;
 import biblio.dao.ExemplaireDAO;
 import biblio.dao.UtilisateurDAO;
+import biblio.gui.BiblioMainFrame;
 
 public class EmprunterCtl {
 	
-	public static void main(String[] args) 
-			throws IOException, SQLException, BiblioException {
+	JOptionPane jop = new JOptionPane();
+	int emprunteurId = 0;
+	int exemplaireId = 0;
+	int userRetour = 0;
+	String userRetourString = null;
+	String[] boutons;
+	String[] options;
+	
+	public void enregistrerEmprunt() throws IOException, SQLException, BiblioException {
 		Connection connection = ConnectionFactory.getDbConnection();
 		connection.setAutoCommit(false);
-		
-		JOptionPane jop = new JOptionPane();
-		int emprunteurId = 0;
-		int exemplaireId = 0;
-		int userRetour = 0;
-		String userRetourString = null;
-		String[] boutons;
-		String[] options;
 		
 		UtilisateurI userDAO = new UtilisateurDAO(connection);
 		HashMap<Integer, String> users = userDAO.ListAllUsers();
@@ -89,7 +91,8 @@ public class EmprunterCtl {
 						empruntEnCoursDAO.insertEmpruntEnCours(empruntEnCours);
 						user1.addEmpruntEnCours(empruntEnCours);
 						exDAO.updateExemplaireStatus(exemplaire1);
-						jop.showMessageDialog(jop, "Enregistrement est OK", "Utilisateur", jop.INFORMATION_MESSAGE);
+						jop.showMessageDialog(jop, "Enregistrement est OK", 
+								"Utilisateur", jop.INFORMATION_MESSAGE);
 					}
 					else {
 						jop.showMessageDialog(jop, "ERROR_MESSAGE : conditions de pret ne sont pas acceptées", 
@@ -111,7 +114,14 @@ public class EmprunterCtl {
 					"Info", jop.INFORMATION_MESSAGE);
 		}
 		
-			
+		connection.commit();
+		connection.close();
+	}
+	
+	public void enregistrerRetour() throws IOException, SQLException, BiblioException {
+		Connection connection = ConnectionFactory.getDbConnection();
+		connection.setAutoCommit(false);
+		
 		EmpruntEnCoursI empruntEnCoursDAO = new EmpruntEnCoursDAO(connection);
 		HashMap<Integer, String> empruntEnCours = empruntEnCoursDAO.ListAllEmpruntEnCours();
 		HashMap<String, Integer> empruntString2idExemplaire = new HashMap<>();
@@ -138,7 +148,8 @@ public class EmprunterCtl {
 				exemplaireId = empruntString2idExemplaire.get(userRetourString);
 				System.out.println(exemplaireId);
 				if (empruntEnCoursDAO.madeReturn(exemplaireId)) {
-					jop.showMessageDialog(jop, "Enregistrement de retour est OK", "Retour livre", jop.INFORMATION_MESSAGE);
+					jop.showMessageDialog(jop, "Enregistrement de retour est OK", 
+							"Retour livre", jop.INFORMATION_MESSAGE);
 				}
 				else {
 					jop.showMessageDialog(jop, "Erreur de retour, rollback effectué", 
@@ -155,9 +166,44 @@ public class EmprunterCtl {
 					"Pas de livres", jop.ERROR_MESSAGE);
 		}
 		
-		
 		connection.commit();
 		connection.close();
 	}
-
+	
+	
+	
+	public static void main(String[] args) 
+			throws IOException, SQLException, BiblioException {
+		EmprunterCtl emprunterCtl = new EmprunterCtl();
+		
+		emprunterCtl.userRetour = emprunterCtl.jop.showConfirmDialog(emprunterCtl.jop, 
+				"Voulez-vous utiliser une interface graphique ?\n"
+				+ " \"Yes\" pour interface graphique\n \"No\" pour console\n \"Cancel\" pour sortir", 
+				"Choix d'interface", emprunterCtl.jop.YES_NO_CANCEL_OPTION);
+		// x -> -1; ok -> 0 no -> 1; annul -> 2
+		System.out.println(emprunterCtl.userRetour);
+		if (emprunterCtl.userRetour == 0) { //gui
+			Connection connection = ConnectionFactory.getDbConnection();
+			connection.setAutoCommit(false);
+			UtilisateurI userDAO = new UtilisateurDAO(connection);
+			List<Utilisateur> users = userDAO.findAll();
+			ExemplaireI exDAO = new ExemplaireDAO(connection);
+			List<Exemplaire> exemplaires = exDAO.findAll();
+			EmpruntEnCoursI empruntEnCoursDAO = new EmpruntEnCoursDAO(connection);
+			List<EmpruntEnCoursDB> empruntsEnCoursDB = empruntEnCoursDAO.findAll();
+			SwingUtilities.invokeLater(()->{
+				new BiblioMainFrame(users, exemplaires, empruntsEnCoursDB);
+			});
+			
+			connection.commit();
+			connection.close();
+		}
+		else if (emprunterCtl.userRetour == 1) { //concole
+			emprunterCtl.enregistrerEmprunt();
+			emprunterCtl.enregistrerRetour();
+		}
+		else {
+			System.exit(0);
+		}
+	}
 }
