@@ -5,12 +5,12 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FileDialog;
+import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.Insets;
 import java.awt.RenderingHints;
 import java.awt.Toolkit;
 import java.awt.event.InputEvent;
@@ -34,22 +34,23 @@ import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JScrollPane;
+import javax.swing.JTabbedPane;
 import javax.swing.JTable;
+import javax.swing.JTextField;
 import javax.swing.JToggleButton;
 import javax.swing.KeyStroke;
+import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.plaf.metal.MetalLookAndFeel;
 
-import biblio.business.Adherent;
 import biblio.business.BiblioException;
-import biblio.business.Employe;
 import biblio.business.Exemplaire;
 import biblio.business.Utilisateur;
 import biblio.control.EmprunterCtl;
 import biblio.dao.EmpruntEnCoursDB;
 
-public class BiblioMainFrame extends JFrame {
+public class BiblioMainFrame2 extends JFrame {
 
 	JLabel jLabel11;
 	JToggleButton jToggleButton;
@@ -63,11 +64,11 @@ public class BiblioMainFrame extends JFrame {
 	List<Exemplaire> exemplaires;
 	List<EmpruntEnCoursDB> empruntsEnCoursDB;
 	
-	public BiblioMainFrame() {
+	public BiblioMainFrame2() {
 		this(null, null, null);
 	}
 	
-	public BiblioMainFrame(List<Utilisateur> utilisateurs, 
+	public BiblioMainFrame2(List<Utilisateur> utilisateurs, 
 							List<Exemplaire> exemplaires, 
 							List<EmpruntEnCoursDB> empruntsEnCoursDB) {
 		try {
@@ -232,14 +233,14 @@ public class BiblioMainFrame extends JFrame {
 			jMBiblioEnregistrer.setMnemonic(KeyEvent.VK_E);
 			jMBiblioEnregistrer.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_E, InputEvent.CTRL_DOWN_MASK));
 			jMBiblioEnregistrer.addActionListener((actionEvent)-> {try {emprunterCtl.enregistrerEmprunt();} 
-									catch (IOException | SQLException | BiblioException e) {};jTable2.repaint();});
+									catch (IOException | SQLException | BiblioException e) {};});
 			jMBiblio.add(jMBiblioEnregistrer);
 			
 			JMenuItem jMBiblioRetourner = new JMenuItem("Enregistrement Retour", new ImageIcon("imgs/books2.png"));
 			jMBiblioRetourner.setMnemonic(KeyEvent.VK_R);
 			jMBiblioRetourner.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_R, InputEvent.CTRL_DOWN_MASK));
 			jMBiblioRetourner.addActionListener((actionEvent)-> {try {emprunterCtl.enregistrerRetour();} 
-									catch (IOException | SQLException | BiblioException e) {};repaint();});
+									catch (IOException | SQLException | BiblioException e) {};});
 			jMBiblio.add(jMBiblioRetourner);
 		
 		jMenuBar.add(jMBiblio);
@@ -257,12 +258,12 @@ public class BiblioMainFrame extends JFrame {
 			jMHelp.setMnemonic(KeyEvent.VK_H);
 			JMenuItem jMHelpTopics = new JMenuItem("Help Topics");
 				jMHelpTopics.addActionListener((actionEvent)-> {jop.showMessageDialog(jop, "Nothing here", 
-						"Info", jop.INFORMATION_MESSAGE);});
+						"Info", jop.INFORMATION_MESSAGE);repaint();});
 				jMHelp.add(jMHelpTopics);
 			
 			JMenuItem jMHelpAbout = new JMenuItem("About");
 				jMHelpAbout.addActionListener((actionEvent)-> {jop.showMessageDialog(jop, "Igor was here", 
-						"Info", jop.INFORMATION_MESSAGE);});
+						"Info", jop.INFORMATION_MESSAGE);repaint();});
 				jMHelp.add(jMHelpAbout);
 		
 		jMenuBar.add(jMHelp);
@@ -274,207 +275,128 @@ public class BiblioMainFrame extends JFrame {
 		jScrollPane.setOpaque(false);
 		this.add(jScrollPane, BorderLayout.CENTER);
 		this.setContentPane(jScrollPane);
+		JScrollPane contentPane = (JScrollPane) this.getContentPane();
+//-----------------------------------------------------------------
+		jPanel.setLayout(new BorderLayout());
+		jPanel.setOpaque(false);
+		
+		JPanel jPanelTop = new JPanel();
+		jPanelTop.setLayout(new FlowLayout());
+		jPanelTop.setOpaque(false);
+		
+		JButton boutonEnregistrer = new JButton("Enregistrer un Emprunt");
+		boutonEnregistrer.setIcon(new ImageIcon("imgs/book2.png"));
+		boutonEnregistrer.setRolloverIcon(new ImageIcon("imgs/obook2.png"));
+		boutonEnregistrer.addActionListener((actionEvent)-> {try {emprunterCtl.enregistrerEmprunt();} 
+									catch (IOException | SQLException | BiblioException e) 
+							{e.printStackTrace();};});
+		jPanelTop.add(boutonEnregistrer);
+		
+		JButton boutonRetour = new JButton("Enregistrer un Retour");
+		boutonRetour.setIcon(new ImageIcon("imgs/books2.png"));
+		boutonRetour.setRolloverIcon(new ImageIcon("imgs/hcbook.png"));
+		boutonRetour.addActionListener((actionEvent)-> {try {emprunterCtl.enregistrerRetour();} 
+					catch (IOException | SQLException | BiblioException e) 
+						{e.printStackTrace();};repaint();});
+		jPanelTop.add(boutonRetour);
+		
+		jPanel.add(jPanelTop, BorderLayout.NORTH);
+//---------------------------------------------------
+		JPanel jPanelCenter = new JPanel();
+		jPanelCenter.setLayout(new FlowLayout());
+		jPanelCenter.setOpaque(false);
 		
 		
-		GridBagLayout gridBagLayout = new GridBagLayout();
-		jPanel.setLayout(gridBagLayout);
+		JTabbedPane jTabbedPane = new JTabbedPane();
+		jTabbedPane.setForeground(Color.BLACK);
+		jTabbedPane.setBackground(Color.LIGHT_GRAY);
+		jTabbedPane.setOpaque(false);
+		jTabbedPane.setFont(new Font("Ariel",Font.PLAIN,20));
 		
-		GridBagConstraints gridBagConstraints = new GridBagConstraints();
-		gridBagConstraints.fill = GridBagConstraints.BOTH;
-		gridBagConstraints.weightx = 1.0;
-		gridBagConstraints.ipadx = 100;
-		gridBagConstraints.insets = new Insets(10, 10, 10, 10);
-		//gridBagConstraints.anchor = GridBagConstraints.NORTHEAST;
-//------------------------------------------------------------------------------------
-		JPanel jPanelInt1 = new JPanel();
-		//jPanelInt1.setBackground(new Color(130, 150, 150));
-		jPanelInt1.setOpaque(false);
-		gridBagConstraints.gridx = 1;
-		gridBagConstraints.gridy = 1;
-		gridBagConstraints.anchor = GridBagConstraints.WEST;
-		gridBagLayout.setConstraints(jPanelInt1, gridBagConstraints);
-		jPanel.add(jPanelInt1);
-		
-		
-//--------------------------------------------------------------------------------
-		JPanel jPanelInt2 = new JPanel();
-		//jPanelInt2.setBackground(new Color(130, 150, 150));
-		jPanelInt2.setOpaque(false);
-		gridBagConstraints.gridx = 2;
-		gridBagConstraints.gridy = 1;
-		gridBagConstraints.anchor = GridBagConstraints.WEST;
-		gridBagLayout.setConstraints(jPanelInt2, gridBagConstraints);
-		jPanel.add(jPanelInt2);
-		
-		JButton bouton = new JButton("Enregistrer un Emprunt");
-		bouton.setIcon(new ImageIcon("imgs/book2.png"));
-		bouton.setRolloverIcon(new ImageIcon("imgs/obook2.png"));
-		bouton.addActionListener((actionEvent)-> {try {emprunterCtl.enregistrerEmprunt();
-							reloadExemplaires();} 
-						catch (IOException | SQLException | BiblioException e) {};
-						});
-		jPanelInt2.add(bouton);
-		JButton bouton2 = new JButton("Enregistrer un Retour");
-		bouton2.setIcon(new ImageIcon("imgs/books2.png"));
-		bouton2.setRolloverIcon(new ImageIcon("imgs/hcbook.png"));
-		bouton2.addActionListener((actionEvent)-> {try {emprunterCtl.enregistrerRetour();} 
-		catch (IOException | SQLException | BiblioException e) {};});
-		jPanelInt2.add(bouton2);
-		this.getRootPane().setDefaultButton(bouton2);
-		
-//-------------------------------------------------------------------------
-		JPanel jPanelInt3 = new JPanel();
-		//jPanelInt3.setBackground(new Color(130, 150, 150));
-		jPanelInt3.setOpaque(false);
-		gridBagConstraints.gridx = 3;
-		gridBagConstraints.gridy = 1;
-		gridBagConstraints.anchor = GridBagConstraints.EAST;
-		gridBagLayout.setConstraints(jPanelInt3, gridBagConstraints);
-		jPanel.add(jPanelInt3);
-		
+		JPanel jPanelTabbedPane1 = new JPanel();
+		jPanelTabbedPane1.setOpaque(false);
+		jPanelTabbedPane1.setBackground(new Color(200,200,250));
 
-//--------------------------------------------------------------------
+
+		JPanel panel = new JPanel();
+		panel.setOpaque(false);
+		jPanelTabbedPane1.add(panel);
 		
-		JPanel jPanelInt4 = new JPanel();
-		//jPanelInt4.setBackground(new Color(130, 150, 150));
-		jPanelInt4.setOpaque(false);
-		gridBagConstraints.gridx = 1;
-		gridBagConstraints.gridy = 2;
-		gridBagConstraints.gridwidth = 3;
-		gridBagConstraints.anchor = GridBagConstraints.WEST;
-		gridBagLayout.setConstraints(jPanelInt4, gridBagConstraints);
+		GridBagLayout gbl_panel = new GridBagLayout();
+		panel.setLayout(gbl_panel);
+		gbl_panel.columnWidths = new int[]{0, 0, 0, 250, 0};
+
+		JLabel userIdLabel = new JLabel("ID utilisateur : ");
+		userIdLabel.setFont(new Font("Ariel",Font.PLAIN,18));
+		userIdLabel.setHorizontalAlignment(SwingConstants.LEFT);
+		userIdLabel.setOpaque(false);
+		GridBagConstraints gbc_lblNewLabel = new GridBagConstraints();
+		gbc_lblNewLabel.gridx = 1;
+		gbc_lblNewLabel.gridy = 1;
+		panel.add(userIdLabel, gbc_lblNewLabel);
+
+		JTextField userIdText = new JTextField();
+		userIdText.setFont(new Font("Ariel",Font.PLAIN,18));
+		userIdText.setHorizontalAlignment(SwingConstants.LEFT);
+		GridBagConstraints gbc_textField = new GridBagConstraints();
+		gbc_textField.gridx = 3;
+		gbc_textField.gridy = 1;
+		gbc_textField.anchor = GridBagConstraints.EAST;
+		panel.add(userIdText, gbc_textField);
+		userIdText.setColumns(10);
+
+		JLabel exemplaireIdLabel = new JLabel("ID exemplaire : ");
+		exemplaireIdLabel.setFont(new Font("Ariel",Font.PLAIN,18));
+		exemplaireIdLabel.setHorizontalAlignment(SwingConstants.LEFT);
+		GridBagConstraints gbc_lblNewLabel_1 = new GridBagConstraints();
+		gbc_lblNewLabel_1.gridx = 1;
+		gbc_lblNewLabel_1.gridy = 3;
+		panel.add(exemplaireIdLabel, gbc_lblNewLabel_1);
+
+		JTextField exemplaireIdText = new JTextField();
+		exemplaireIdText.setFont(new Font("Ariel",Font.PLAIN,18));
+		exemplaireIdText.setHorizontalAlignment(SwingConstants.LEFT);
+		GridBagConstraints gbc_textField_1 = new GridBagConstraints();
+		gbc_textField_1.gridx = 3;
+		gbc_textField_1.gridy = 3;
+		gbc_textField_1.anchor = GridBagConstraints.EAST;
+		panel.add(exemplaireIdText, gbc_textField_1);
+		exemplaireIdText.setColumns(10);
 		
-		if (utilisateurs != null) {
-			int cols = 5;
-			int rows = utilisateurs.size();
-			String[] headers = {"id", "Nom", "Prenom", "H/F", "Categorie"};
-			Object[][] data = new Object[rows][cols];
-			for (int i = 0; i < utilisateurs.size(); i++) {
-				data[i][0] = utilisateurs.get(i).getIdUtilisateur();
-				data[i][1] = utilisateurs.get(i).getNom();
-				data[i][2] = utilisateurs.get(i).getPrenom();
-				data[i][3] = utilisateurs.get(i).getSexe();
-				String categorie = "";
-				if (utilisateurs.get(i) instanceof Adherent) {
-					categorie = "Adherent";
-				}
-				else if (utilisateurs.get(i) instanceof Employe) {
-					categorie = "Employé";
-				}
-				data[i][4] = categorie;
-			}
-			
-			JTable jTable1 = new JTable(data, headers) {
-				@Override
-				public boolean getScrollableTracksViewportWidth() {
-					return super.getScrollableTracksViewportWidth()
-							&& getPreferredSize().width < getParent().getWidth();
-				}
-			};
-			//jTable1.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-			//jTable1.setFillsViewportHeight(true);
-			
-			jTable1.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
-			for(int i=0; i<jTable1.getColumnCount(); i++) {
-				jTable1.getColumnModel().getColumn(i).setPreferredWidth(140);
-			}
-			JScrollPane tableJScrolPane = new JScrollPane(jTable1);
-			tableJScrolPane.setPreferredSize(new Dimension(600, 200));
-			jPanelInt4.add(tableJScrolPane);
-		}
+		JButton btnRegisterEmprunt = new JButton("Enregistrer Emprunt");
+		btnRegisterEmprunt.setFont(new Font("Ariel",Font.PLAIN,18));
+		btnRegisterEmprunt.setHorizontalAlignment(SwingConstants.LEFT);
+		btnRegisterEmprunt.addActionListener((actionEvent)-> 
+			{try {emprunterCtl.enregistrerEmprunt(Integer.parseInt(userIdText.getText()), 
+											Integer.parseInt(exemplaireIdText.getText()));} 
+			catch (IOException | SQLException | BiblioException e) {e.printStackTrace();};});
+		GridBagConstraints gbc_btn = new GridBagConstraints();
+		gbc_btn.gridx = 1;
+		gbc_btn.gridy = 5;
+		gbc_btn.gridwidth = 3;
+		gbc_btn.anchor = GridBagConstraints.EAST;
+		panel.add(btnRegisterEmprunt, gbc_btn);
 		
-		jPanel.add(jPanelInt4);
 		
-//---------------------------------------------------
 		
-		jPanelInt7 = new JPanel();
-		//jPanelInt7.setBackground(new Color(130, 150, 150));
-		jPanelInt7.setOpaque(false);
-		gridBagConstraints.gridx = 1;
-		gridBagConstraints.gridy = 3;
-		gridBagConstraints.gridwidth = 3;
-		gridBagConstraints.anchor = GridBagConstraints.WEST;
-		gridBagLayout.setConstraints(jPanelInt7, gridBagConstraints);
+		jTabbedPane.add("Enregistrer un Emprunt", jPanelTabbedPane1);
 		
-		if (exemplaires != null) {
-			int cols = 4;
-			int rows = exemplaires.size();
-			String[] headers = {"id", "Date achat", "Status", "ISBN"};
-			Object[][] data = new Object[rows][cols];
-			for (int i = 0; i < exemplaires.size(); i++) {
-				data[i][0] = exemplaires.get(i).getIdExemplaire();
-				data[i][1] = exemplaires.get(i).getDateAchat();
-				data[i][2] = exemplaires.get(i).getStatus();
-				data[i][3] = exemplaires.get(i).getIsbn();
+		JPanel jPanelTabbedPane2 = new JPanel();
+		jPanelTabbedPane2.setOpaque(false);
+		jPanelTabbedPane2.add(new JButton("jPanelTabbedPane2 - 1"));
+		jPanelTabbedPane2.add(new JButton("jPanelTabbedPane2 - 2"));
+		jPanelTabbedPane2.add(new JButton("jPanelTabbedPane2 - 3"));
+		jTabbedPane.add("Enregistrer un Retour", jPanelTabbedPane2);
+		
+		JPanel jPanelTabbedPane3 = new JPanel();
+		jPanelTabbedPane3.setOpaque(false);
+		jPanelTabbedPane3.add(new JButton("bouton1"));
+		jPanelTabbedPane3.add(new JButton("bouton2"));
+		jPanelTabbedPane3.add(new JButton("bouton3"));
+		jTabbedPane.add("Consulter", jPanelTabbedPane3);
+		
 				
-			}
-			
-			jTable2 = new JTable(data, headers) {
-				@Override
-				public boolean getScrollableTracksViewportWidth() {
-					return super.getScrollableTracksViewportWidth()
-							&& getPreferredSize().width < getParent().getWidth();
-				}
-			};
-			//jTable2.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-			//jTable2.setFillsViewportHeight(true);
-			
-			jTable2.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
-			for(int i=0; i<jTable2.getColumnCount(); i++) {
-				jTable2.getColumnModel().getColumn(i).setPreferredWidth(140);
-			}
-			JScrollPane tableJScrolPane = new JScrollPane(jTable2);
-			tableJScrolPane.setPreferredSize(new Dimension(600, 200));
-			jPanelInt7.add(tableJScrolPane);
-		}
-		
-		jPanel.add(jPanelInt7);
-		
-//---------------------------------------------------
-		
-		JPanel jPanelInt10 = new JPanel();
-		//jPanelInt10.setBackground(new Color(130, 150, 150));
-		jPanelInt10.setOpaque(false);
-		gridBagConstraints.gridx = 1;
-		gridBagConstraints.gridy = 4;
-		gridBagConstraints.gridwidth = 3;
-		gridBagConstraints.anchor = GridBagConstraints.WEST;
-		gridBagLayout.setConstraints(jPanelInt10, gridBagConstraints);
-		
-		if (empruntsEnCoursDB != null) {
-			int cols = 3;
-			int rows = empruntsEnCoursDB.size();
-			String[] headers = {"id Exemplaire", "id Utilisateur", "Date Emprunt"};
-			Object[][] data = new Object[rows][cols];
-			for (int i = 0; i < empruntsEnCoursDB.size(); i++) {
-				data[i][0] = empruntsEnCoursDB.get(i).getExemplaire().getIdExemplaire();
-				data[i][1] = empruntsEnCoursDB.get(i).getEmprunteur().getIdUtilisateur();
-				data[i][2] = empruntsEnCoursDB.get(i).getDateEmprunt();
-			}
-			
-			JTable jTable3 = new JTable(data, headers) {
-				@Override
-				public boolean getScrollableTracksViewportWidth() {
-					return super.getScrollableTracksViewportWidth()
-							&& getPreferredSize().width < getParent().getWidth();
-				}
-			};
-			//jTable3.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
-			//jTable3.setFillsViewportHeight(true);
-			
-			jTable3.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
-			for(int i=0; i<jTable3.getColumnCount(); i++) {
-				jTable3.getColumnModel().getColumn(i).setPreferredWidth(140);
-			}
-			JScrollPane tableJScrolPane = new JScrollPane(jTable3);
-			tableJScrolPane.setPreferredSize(new Dimension(600, 200));
-			jPanelInt10.add(tableJScrolPane);
-		}
-		
-		jPanel.add(jPanelInt10);
-		
-//---------------------------------------------------
-		
+		jPanel.add(jTabbedPane, BorderLayout.CENTER);
 		
 	}
 
