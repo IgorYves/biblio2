@@ -16,9 +16,9 @@ import biblio.business.BiblioException;
 import biblio.business.EmpruntEnCours;
 import biblio.business.Exemplaire;
 import biblio.business.Utilisateur;
+import biblio.dao.BiblioDaoException;
 import biblio.dao.ConnectionFactory;
 import biblio.dao.EmpruntEnCoursDAO;
-import biblio.dao.EmpruntEnCoursDB;
 import biblio.dao.ExemplaireDAO;
 import biblio.dao.UtilisateurDAO;
 import biblio.gui.BiblioMainFrame;
@@ -119,16 +119,26 @@ public class EmprunterCtl {
 		connection.close();
 	}
 	public void enregistrerEmprunt(int emprunteurId, int exemplaireId) 
-			throws SQLException, BiblioException, IOException {
+			throws SQLException, BiblioException, IOException, BiblioDaoException {
 		Connection connection = ConnectionFactory.getDbConnection();
 		connection.setAutoCommit(false);
 		UtilisateurI userDAO = new UtilisateurDAO(connection);
 		Utilisateur user1 = userDAO.findByKey(emprunteurId);
+		if (user1 == null) {
+			jop.showMessageDialog(jop, "ERROR_MESSAGE : user not found", 
+					"Utilisateur", jop.ERROR_MESSAGE);
+			throw new BiblioDaoException("user not found");
+		}
 		System.out.println(user1);
 		System.out.println(user1.isConditionsPretAcceptees());
 		if (user1.isConditionsPretAcceptees()) {
 			ExemplaireI exDAO = new ExemplaireDAO(connection);
 			Exemplaire exemplaire1 = exDAO.findByKey(exemplaireId);
+			if (exemplaire1 == null) {
+				jop.showMessageDialog(jop, "ERROR_MESSAGE : exemplaire not found", 
+						"Exemplaire", jop.ERROR_MESSAGE);
+				throw new BiblioDaoException("exemplaire not found");
+			}
 			EmpruntEnCours empruntEnCours = new EmpruntEnCours(user1, exemplaire1, new Date());
 			EmpruntEnCoursI empruntEnCoursDAO = new EmpruntEnCoursDAO(connection);
 			empruntEnCoursDAO.insertEmpruntEnCours(empruntEnCours);
@@ -141,6 +151,9 @@ public class EmprunterCtl {
 			jop.showMessageDialog(jop, "ERROR_MESSAGE : conditions de pret ne sont pas acceptées", 
 					"Utilisateur", jop.ERROR_MESSAGE);
 		}
+		
+		connection.commit();
+		connection.close();
 	}
 	
 	
@@ -195,6 +208,23 @@ public class EmprunterCtl {
 		connection.commit();
 		connection.close();
 	}
+	public void enregistrerRetour(int exemplaireId) 
+			throws IOException, SQLException {
+		Connection connection = ConnectionFactory.getDbConnection();
+		connection.setAutoCommit(false);
+		EmpruntEnCoursI empruntEnCoursDAO = new EmpruntEnCoursDAO(connection);
+		if (empruntEnCoursDAO.madeReturn(exemplaireId)) {
+			jop.showMessageDialog(jop, "Enregistrement de retour est OK", 
+					"Retour livre", jop.INFORMATION_MESSAGE);
+		}
+		else {
+			jop.showMessageDialog(jop, "Erreur de retour, rollback effectué", 
+					"Erreur", jop.ERROR_MESSAGE);
+		}
+		
+		connection.commit();
+		connection.close();
+	}
 	
 	public static List<Utilisateur> getAllUtilisateurs() 
 			throws IOException, SQLException, BiblioException {
@@ -225,16 +255,16 @@ public class EmprunterCtl {
 		return exemplaires;
 	}
 	
-	public static List<EmpruntEnCoursDB> getAllEmpruntEnCoursDB() 
+	public static HashMap<Integer, String> listAllEmpruntEnCoursDB() 
 			throws IOException, SQLException, BiblioException {
 		Connection connection = ConnectionFactory.getDbConnection();
-		return getAllEmpruntEnCoursDB(connection);
+		return listAllEmpruntEnCoursDB(connection);
 	}
-	public static List<EmpruntEnCoursDB> getAllEmpruntEnCoursDB(Connection connection) 
+	public static HashMap<Integer, String> listAllEmpruntEnCoursDB(Connection connection) 
 			throws SQLException, BiblioException, IOException {
 		connection.setAutoCommit(false);
 		EmpruntEnCoursI empruntEnCoursDAO = new EmpruntEnCoursDAO(connection);
-		List<EmpruntEnCoursDB> empruntsEnCoursDB = empruntEnCoursDAO.findAll();
+		HashMap<Integer, String> empruntsEnCoursDB = empruntEnCoursDAO.ListAllEmpruntEnCours();
 		connection.commit();
 		connection.close();
 		return empruntsEnCoursDB;
@@ -243,6 +273,8 @@ public class EmprunterCtl {
 	public static void main(String[] args) 
 			throws IOException, SQLException, BiblioException {
 		EmprunterCtl emprunterCtl = new EmprunterCtl();
+		
+		System.out.println(listAllEmpruntEnCoursDB());
 		
 		String[] boutons = {"Swing v2.1 beta", "Swing v2.0 stable avec Jop", "Console v1.0"};
 		emprunterCtl.userRetour = emprunterCtl.jop.showOptionDialog(emprunterCtl.jop, 
@@ -257,7 +289,7 @@ public class EmprunterCtl {
 				try {
 					new BiblioMainFrame2(getAllUtilisateurs(), 
 										getAllExemplaires(), 
-										getAllEmpruntEnCoursDB());
+										null);
 				} catch (IOException | SQLException | BiblioException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -269,7 +301,7 @@ public class EmprunterCtl {
 				try {
 					new BiblioMainFrame(getAllUtilisateurs(), 
 										getAllExemplaires(), 
-										getAllEmpruntEnCoursDB());
+										listAllEmpruntEnCoursDB());
 				} catch (IOException | SQLException | BiblioException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();

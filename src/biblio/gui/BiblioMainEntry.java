@@ -19,7 +19,7 @@ public class BiblioMainEntry {
 					try {
 						new BiblioMainFrame2(biblio.control.EmprunterCtl.getAllUtilisateurs(),
 											biblio.control.EmprunterCtl.getAllExemplaires(),
-											biblio.control.EmprunterCtl.getAllEmpruntEnCoursDB());
+											biblio.control.EmprunterCtl.listAllEmpruntEnCoursDB());
 					} catch (IOException | SQLException | BiblioException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();

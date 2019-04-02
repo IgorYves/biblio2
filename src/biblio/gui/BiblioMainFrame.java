@@ -17,7 +17,10 @@ import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import javax.swing.ButtonGroup;
 import javax.swing.ImageIcon;
@@ -69,7 +72,7 @@ public class BiblioMainFrame extends JFrame {
 	
 	public BiblioMainFrame(List<Utilisateur> utilisateurs, 
 							List<Exemplaire> exemplaires, 
-							List<EmpruntEnCoursDB> empruntsEnCoursDB) {
+							HashMap<Integer, String> empruntsEnCoursDB) {
 		try {
 			UIManager.setLookAndFeel(new MetalLookAndFeel());
 		} catch (UnsupportedLookAndFeelException e1) {
@@ -442,14 +445,20 @@ public class BiblioMainFrame extends JFrame {
 		gridBagLayout.setConstraints(jPanelInt10, gridBagConstraints);
 		
 		if (empruntsEnCoursDB != null) {
-			int cols = 3;
+			int cols = 2;
 			int rows = empruntsEnCoursDB.size();
-			String[] headers = {"id Exemplaire", "id Utilisateur", "Date Emprunt"};
+			String[] headers = {"id Exemplaire", "id Utilisateur, Date Emprunt"};
 			Object[][] data = new Object[rows][cols];
-			for (int i = 0; i < empruntsEnCoursDB.size(); i++) {
-				data[i][0] = empruntsEnCoursDB.get(i).getExemplaire().getIdExemplaire();
-				data[i][1] = empruntsEnCoursDB.get(i).getEmprunteur().getIdUtilisateur();
-				data[i][2] = empruntsEnCoursDB.get(i).getDateEmprunt();
+			
+			Set<Integer> empruntEnCoursKeys = empruntsEnCoursDB.keySet();
+			Iterator iterator = empruntEnCoursKeys.iterator();
+			Integer current = null;
+			int i = 0;
+			while (iterator.hasNext()) {
+				current = (Integer) iterator.next();
+				data[i][0] = current;
+				data[i][1] = empruntsEnCoursDB.get(current);
+				i++;
 			}
 			
 			JTable jTable3 = new JTable(data, headers) {
@@ -463,8 +472,8 @@ public class BiblioMainFrame extends JFrame {
 			//jTable3.setFillsViewportHeight(true);
 			
 			jTable3.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
-			for(int i=0; i<jTable3.getColumnCount(); i++) {
-				jTable3.getColumnModel().getColumn(i).setPreferredWidth(140);
+			for(int i2=0; i2<jTable3.getColumnCount(); i2++) {
+				jTable3.getColumnModel().getColumn(i2).setPreferredWidth(140);
 			}
 			JScrollPane tableJScrolPane = new JScrollPane(jTable3);
 			tableJScrolPane.setPreferredSize(new Dimension(600, 200));
