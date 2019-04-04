@@ -14,10 +14,15 @@ import java.awt.GridBagLayout;
 import java.awt.HeadlessException;
 import java.awt.RenderingHints;
 import java.awt.Toolkit;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.text.Format;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -53,6 +58,7 @@ import javax.swing.plaf.metal.MetalLookAndFeel;
 import biblio.business.Adherent;
 import biblio.business.BiblioException;
 import biblio.business.Employe;
+import biblio.business.EmpruntEnCours;
 import biblio.business.Exemplaire;
 import biblio.business.Utilisateur;
 import biblio.control.EmprunterCtl;
@@ -84,14 +90,17 @@ public class BiblioMainFrame2 extends JFrame {
 	private JPanel listEmpruntsEnCoursDbPanel;
 	private JPanel jPanelInt8;
 	private JPanel userPanel;
+	private String getAutorisationUser;
 	
 	public BiblioMainFrame2() {
-		this(null, null, null);
+		this(null, null, null, null);
 	}
 	
 	public BiblioMainFrame2(List<Utilisateur> utilisateurs, 
 							List<Exemplaire> exemplaires, 
-							HashMap<Integer, String> empruntsEnCoursDbList) {
+							HashMap<Integer, String> empruntsEnCoursDbList,
+							String getAutorisationUser) {
+		this.getAutorisationUser = getAutorisationUser;
 		makeMainFrame();
 		HYJPanel jPanel = new HYJPanel();
 		this.add(jPanel);
@@ -115,7 +124,13 @@ public class BiblioMainFrame2 extends JFrame {
 		jPanelTop.add(makeButtonEnregistrer());
 		jPanelTop.add(makeButtonRetour());
 		jPanelTop.add(makeButtonRefresh());
-		jPanelTop.add(makeButtonUser());
+		if (getAutorisationUser == "responsable") {
+			jPanelTop.add(makeButtonUser());
+		}
+		if (getAutorisationUser == "gestion") {
+			jPanelTop.add(makeButtonAjoutLivres());
+		}
+		
 //******
 		jPanel.add(jPanelTop, BorderLayout.PAGE_START);
 //--------------------------------------------------------------------
@@ -416,9 +431,17 @@ public class BiblioMainFrame2 extends JFrame {
 			this.jPanelCenter.repaint();
 			repaint();
 		});
-		
-		
 		return boutonUser;
+	}
+	
+	private JButton makeButtonAjoutLivres() {
+		JButton boutonAjoutLivres = new JButton("Ajouter nouvelle livre");
+		boutonAjoutLivres.setIcon(new ImageIcon("imgs/hcbook.png"));
+		boutonAjoutLivres.addActionListener((actionEvent)-> {
+			jop.showMessageDialog(jop, "Nothing yet", 
+					"Info", jop.INFORMATION_MESSAGE);
+		});
+		return boutonAjoutLivres;
 	}
 	
 	private JPanel makePaneEmprunt() {
@@ -684,8 +707,12 @@ public class BiblioMainFrame2 extends JFrame {
 	private JPanel makeUser() throws IOException, SQLException, BiblioException {
 		jPanelInt8 = new JPanel();
 		jPanelInt8.setOpaque(false);
-		jPanelInt8.setLayout(new BoxLayout(jPanelInt8, BoxLayout.Y_AXIS));
+		jPanelInt8.setLayout(new BorderLayout());
+		
 		JPanel selectUser = new JPanel();
+		selectUser.setOpaque(false);
+		selectUser.setFont(new Font("Ariel",Font.PLAIN,14));
+		selectUser.setLayout(new BoxLayout(selectUser, BoxLayout.Y_AXIS));
 		
 		HashMap<Integer, String> users = biblio.control.EmprunterCtl.listAllUtilisateurs();
 		
@@ -698,7 +725,25 @@ public class BiblioMainFrame2 extends JFrame {
 		}
 		
 		JComboBox<String> jComboBox1 = new JComboBox<>(combo);
-		jComboBox1.addActionListener((actionEvent)->{
+		jComboBox1.setFont(new Font("Ariel",Font.PLAIN,14));
+		jComboBox1.addActionListener(new AffichUser());
+		
+		selectUser.add(jComboBox1);
+		jPanelInt8.add(selectUser, BorderLayout.NORTH);
+		
+		userPanel = new JPanel();
+		userPanel.setFont(new Font("Ariel",Font.PLAIN,14));
+		userPanel.setOpaque(false);
+		userPanel.setLayout(new BoxLayout(userPanel, BoxLayout.Y_AXIS));
+		jPanelInt8.add(userPanel, BorderLayout.CENTER);
+		
+		return jPanelInt8;
+	}
+	
+	private class AffichUser implements ActionListener {
+
+		@Override
+		public void actionPerformed(ActionEvent actionEvent) {
 			JComboBox comboBox = (JComboBox)actionEvent.getSource();
 	        String user = (String)comboBox.getSelectedItem();
 	        int userId = Integer.parseInt(user.substring(0, 1));
@@ -709,26 +754,40 @@ public class BiblioMainFrame2 extends JFrame {
 			} catch (SQLException | BiblioException | IOException e) {
 				e.printStackTrace();
 			}
-			
-		});
+		}
 		
-		selectUser.add(jComboBox1);
-		jPanelInt8.add(selectUser);
-		
-		userPanel = new JPanel();
-		
-		jPanelInt8.add(userPanel);
-		
-		return jPanelInt8;
+		private void afficheUser(int userId) 
+				throws SQLException, BiblioException, IOException {
+			System.out.println(biblio.control.EmprunterCtl.getUser(userId));
+			Utilisateur user = biblio.control.EmprunterCtl.getUser(userId);
+			ArrayList<EmpruntEnCours> emprunts = user.getEmpruntEnCours();
+			userPanel.removeAll();
+			JLabel userLabel = new JLabel(user.getNom() + " " + user.getPrenom());
+			userLabel.setFont(new Font("Ariel",Font.PLAIN,14));
+			userPanel.add(userLabel);
+			if (emprunts.size() > 0) {
+				userPanel.add(new JLabel("Emprunts en cours : "));
+				Format formatter = new SimpleDateFormat("yyyy-MM-dd");
+				String date;
+				for (int i = 0; i< emprunts.size(); i++) {
+					EmpruntEnCours empruntEnCours = emprunts.get(i);
+					date = formatter.format(empruntEnCours.getDateEmprunt());
+					userPanel.add(new JLabel("livre : \"" 
+								+ empruntEnCours.getExemplaire().getTitle() + "\", date emprunt : " 
+									+ date));
+				}
+				
+			}
+			else {
+				userPanel.add(new JLabel("Pas des emprunts en cours"));
+			}
+			userPanel.revalidate();
+			userPanel.repaint();
+			repaint();
+		}
 	}
 	
-	private void afficheUser(int userId) throws SQLException, BiblioException, IOException {
-		this.userPanel.removeAll();
-		this.userPanel.add(new JLabel(biblio.control.EmprunterCtl.getUserString(userId)));
-		this.userPanel.revalidate();
-		this.userPanel.repaint();
-		repaint();
-	}
+	
 	
 	private void reloadUtilisateurs() 
 			throws IOException, SQLException, BiblioException {

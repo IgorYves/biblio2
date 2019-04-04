@@ -28,7 +28,7 @@ import biblio.gui.BiblioMainFrame;
 import biblio.gui.BiblioMainFrame2;
 
 public class EmprunterCtl {
-	
+	static Connection connection;
 	static JOptionPane jop = new JOptionPane();
 	int emprunteurId = 0;
 	int exemplaireId = 0;
@@ -36,9 +36,12 @@ public class EmprunterCtl {
 	String userRetourString = null;
 	String[] boutons;
 	String[] options;
+	public static String autorisedUserType = null;
 	
 	public void enregistrerEmprunt() throws IOException, SQLException, BiblioException {
-		Connection connection = ConnectionFactory.getDbConnection();
+		if (connection == null) {
+			connection = ConnectionFactory.getDbConnection();
+		}
 		connection.setAutoCommit(false);
 		
 		UtilisateurI userDAO = new UtilisateurDAO(connection);
@@ -119,11 +122,13 @@ public class EmprunterCtl {
 		}
 		
 		connection.commit();
-		connection.close();
+		//connection.close();
 	}
 	public void enregistrerEmprunt(int emprunteurId, int exemplaireId) 
 			throws SQLException, BiblioException, IOException, BiblioDaoException {
-		Connection connection = ConnectionFactory.getDbConnection();
+		if (connection == null) {
+			connection = ConnectionFactory.getDbConnection();
+		}
 		connection.setAutoCommit(false);
 		UtilisateurI userDAO = new UtilisateurDAO(connection);
 		Utilisateur user1 = userDAO.findByKey(emprunteurId);
@@ -156,12 +161,14 @@ public class EmprunterCtl {
 		}
 		
 		connection.commit();
-		connection.close();
+		//connection.close();
 	}
 	
 	
 	public void enregistrerRetour() throws IOException, SQLException, BiblioException, HeadlessException, BiblioDaoException {
-		Connection connection = ConnectionFactory.getDbConnection();
+		if (connection == null) {
+			connection = ConnectionFactory.getDbConnection();
+		}
 		connection.setAutoCommit(false);
 		
 		EmpruntEnCoursI empruntEnCoursDAO = new EmpruntEnCoursDAO(connection);
@@ -209,11 +216,13 @@ public class EmprunterCtl {
 		}
 		
 		connection.commit();
-		connection.close();
+		//connection.close();
 	}
 	public void enregistrerRetour(int exemplaireId) 
 			throws IOException, SQLException, HeadlessException, BiblioDaoException {
-		Connection connection = ConnectionFactory.getDbConnection();
+		if (connection == null) {
+			connection = ConnectionFactory.getDbConnection();
+		}
 		connection.setAutoCommit(false);
 		EmpruntEnCoursI empruntEnCoursDAO = new EmpruntEnCoursDAO(connection);
 		if (empruntEnCoursDAO.madeReturn(exemplaireId)) {
@@ -226,12 +235,14 @@ public class EmprunterCtl {
 		}
 		
 		connection.commit();
-		connection.close();
+		//connection.close();
 	}
 	
 	public static List<Utilisateur> getAllUtilisateurs() 
 			throws IOException, SQLException, BiblioException {
-		Connection connection = ConnectionFactory.getDbConnection();
+		if (connection == null) {
+			connection = ConnectionFactory.getDbConnection();
+		}
 		return getAllUtilisateurs(connection);
 	}
 	public static List<Utilisateur> getAllUtilisateurs(Connection connection) 
@@ -240,12 +251,14 @@ public class EmprunterCtl {
 		UtilisateurI userDAO = new UtilisateurDAO(connection);
 		List<Utilisateur> users = userDAO.findAll();
 		connection.commit();
-		connection.close();
+		//connection.close();
 		return users;
 	}
 	public static HashMap<Integer, String> listAllUtilisateurs() 
 			throws IOException, SQLException, BiblioException {
-		Connection connection = ConnectionFactory.getDbConnection();
+		if (connection == null) {
+			connection = ConnectionFactory.getDbConnection();
+		}
 		connection.setAutoCommit(false);
 		UtilisateurI userDAO = new UtilisateurDAO(connection);
 		HashMap<Integer, String> users = userDAO.ListAllUsers();
@@ -253,7 +266,9 @@ public class EmprunterCtl {
 	}
 	
 	public static List<Exemplaire> getAllExemplaires() throws IOException, SQLException {
-		Connection connection = ConnectionFactory.getDbConnection();
+		if (connection == null) {
+			connection = ConnectionFactory.getDbConnection();
+		}
 		return getAllExemplaires(connection);
 	}
 	public static List<Exemplaire> getAllExemplaires(Connection connection) 
@@ -262,13 +277,15 @@ public class EmprunterCtl {
 		ExemplaireI exDAO = new ExemplaireDAO(connection);
 		List<Exemplaire> exemplaires = exDAO.findAll();
 		connection.commit();
-		connection.close();
+		//connection.close();
 		return exemplaires;
 	}
 	
 	public static HashMap<Integer, String> listAllEmpruntEnCoursDB() 
 			throws IOException, SQLException, BiblioException {
-		Connection connection = ConnectionFactory.getDbConnection();
+		if (connection == null) {
+			connection = ConnectionFactory.getDbConnection();
+		}
 		return listAllEmpruntEnCoursDB(connection);
 	}
 	public static HashMap<Integer, String> listAllEmpruntEnCoursDB(Connection connection) 
@@ -277,14 +294,14 @@ public class EmprunterCtl {
 		EmpruntEnCoursI empruntEnCoursDAO = new EmpruntEnCoursDAO(connection);
 		HashMap<Integer, String> empruntsEnCoursDB = empruntEnCoursDAO.ListAllEmpruntEnCours();
 		connection.commit();
-		connection.close();
+		//connection.close();
 		return empruntsEnCoursDB;
 	}
 	
-	public static boolean getAutorisation() {
+	public static String getAutorisation() {
 		JTextField username = new JTextField();
 		JTextField password = new JPasswordField();
-		Object[] message = {"Login (\"biblio\") : ", username, 
+		Object[] message = {"Login (biblio, gestion, responsable) : ", username, 
 							"Mot de passe (\"secret\") : ", password};
 		boolean autentifOK = false;
 		boolean continu = true;
@@ -296,8 +313,20 @@ public class EmprunterCtl {
 				if (username.getText().equals("biblio") && password.getText().equals("secret")) {
 					System.out.println("Autentification est OK");
 					continu = false;
-					return true;
-				} else {
+					autorisedUserType = "biblio";
+					return "biblio";
+				}
+				else if (username.getText().equals("gestion") && password.getText().equals("secret")) {
+					System.out.println("Autentification est OK");
+					continu = false;
+					return "gestion";
+				}
+				else if (username.getText().equals("responsable") && password.getText().equals("secret")) {
+					System.out.println("Autentification est OK");
+					continu = false;
+					return "responsable";
+				}
+				else {
 					jop.showMessageDialog(jop, "Autentification echouée", 
 										"Info", jop.INFORMATION_MESSAGE);
 					System.out.println("Autentification echouée");
@@ -306,22 +335,28 @@ public class EmprunterCtl {
 				jop.showMessageDialog(jop, "Action annulée", "Info", jop.INFORMATION_MESSAGE);
 				System.out.println("Autentification annulée");
 				continu = false;
-				return false;
+				return null;
 			}
 		}
 		
-		return false;
+		return null;
 	}
 
-	public static String getUserString(int id) throws SQLException, BiblioException, IOException {
-		Connection connection = ConnectionFactory.getDbConnection();
+	public static Utilisateur getUser(int id) throws SQLException, BiblioException, IOException {
+		if (connection == null) {
+			connection = ConnectionFactory.getDbConnection();
+		}
 		connection.setAutoCommit(false);
 		UtilisateurI userDAO = new UtilisateurDAO(connection);
-		connection.commit();
-		connection.close();
-		//return userDAO.findByKey(id).toString();
 		Utilisateur user = userDAO.findByKey(id);
-		return null;
+		connection.commit();
+		//connection.close();
+		//return userDAO.findByKey(id).toString();
+		return user;
+	}
+	
+	public void finalise() throws SQLException {
+		connection.close();
 	}
 	
 	public static void main(String[] args) 
@@ -340,11 +375,11 @@ public class EmprunterCtl {
 		System.out.println(emprunterCtl.userRetour);
 		if (emprunterCtl.userRetour == 0) {//Swing (V2.0)
 			SwingUtilities.invokeLater(()->{
-				if (getAutorisation()) {
+				if (getAutorisation() != null) {
 					try {
 						new BiblioMainFrame2(getAllUtilisateurs(), 
 											getAllExemplaires(), 
-											null);
+											null, autorisedUserType);
 					} catch (IOException | SQLException | BiblioException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
@@ -357,7 +392,7 @@ public class EmprunterCtl {
 		}
 		else if (emprunterCtl.userRetour == 1) {//Swing avec Jop
 			SwingUtilities.invokeLater(()->{
-				if (getAutorisation()) {
+				if (getAutorisation() != null) {
 					try {
 						new BiblioMainFrame(getAllUtilisateurs(), 
 											getAllExemplaires(), 
@@ -373,7 +408,7 @@ public class EmprunterCtl {
 			});
 		}
 		else if (emprunterCtl.userRetour == 2) {//concole
-			if (getAutorisation()) {
+			if (getAutorisation() != null) {
 				emprunterCtl.enregistrerEmprunt();
 				emprunterCtl.enregistrerRetour();
 			}else {
