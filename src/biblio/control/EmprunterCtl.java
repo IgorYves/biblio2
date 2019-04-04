@@ -1,5 +1,6 @@
 package biblio.control;
 
+import java.awt.HeadlessException;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -10,6 +11,8 @@ import java.util.List;
 import java.util.Set;
 
 import javax.swing.JOptionPane;
+import javax.swing.JPasswordField;
+import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 
 import biblio.business.BiblioException;
@@ -26,7 +29,7 @@ import biblio.gui.BiblioMainFrame2;
 
 public class EmprunterCtl {
 	
-	JOptionPane jop = new JOptionPane();
+	static JOptionPane jop = new JOptionPane();
 	int emprunteurId = 0;
 	int exemplaireId = 0;
 	int userRetour = 0;
@@ -148,7 +151,7 @@ public class EmprunterCtl {
 					"Utilisateur", jop.INFORMATION_MESSAGE);
 		}
 		else {
-			jop.showMessageDialog(jop, "ERROR_MESSAGE : conditions de pret ne sont pas acceptées", 
+			jop.showMessageDialog(jop, "ERROR_MESSAGE : conditions de pret ne sont pas acceptées !", 
 					"Utilisateur", jop.ERROR_MESSAGE);
 		}
 		
@@ -157,7 +160,7 @@ public class EmprunterCtl {
 	}
 	
 	
-	public void enregistrerRetour() throws IOException, SQLException, BiblioException {
+	public void enregistrerRetour() throws IOException, SQLException, BiblioException, HeadlessException, BiblioDaoException {
 		Connection connection = ConnectionFactory.getDbConnection();
 		connection.setAutoCommit(false);
 		
@@ -209,7 +212,7 @@ public class EmprunterCtl {
 		connection.close();
 	}
 	public void enregistrerRetour(int exemplaireId) 
-			throws IOException, SQLException {
+			throws IOException, SQLException, HeadlessException, BiblioDaoException {
 		Connection connection = ConnectionFactory.getDbConnection();
 		connection.setAutoCommit(false);
 		EmpruntEnCoursI empruntEnCoursDAO = new EmpruntEnCoursDAO(connection);
@@ -238,6 +241,14 @@ public class EmprunterCtl {
 		List<Utilisateur> users = userDAO.findAll();
 		connection.commit();
 		connection.close();
+		return users;
+	}
+	public static HashMap<Integer, String> listAllUtilisateurs() 
+			throws IOException, SQLException, BiblioException {
+		Connection connection = ConnectionFactory.getDbConnection();
+		connection.setAutoCommit(false);
+		UtilisateurI userDAO = new UtilisateurDAO(connection);
+		HashMap<Integer, String> users = userDAO.ListAllUsers();
 		return users;
 	}
 	
@@ -270,8 +281,51 @@ public class EmprunterCtl {
 		return empruntsEnCoursDB;
 	}
 	
+	public static boolean getAutorisation() {
+		JTextField username = new JTextField();
+		JTextField password = new JPasswordField();
+		Object[] message = {"Login (\"biblio\") : ", username, 
+							"Mot de passe (\"secret\") : ", password};
+		boolean autentifOK = false;
+		boolean continu = true;
+		int option;
+		while (continu) {
+			option = JOptionPane.showConfirmDialog(null, message,
+					"Autentifiez-vous SVP", JOptionPane.OK_CANCEL_OPTION);
+			if (option == JOptionPane.OK_OPTION) {
+				if (username.getText().equals("biblio") && password.getText().equals("secret")) {
+					System.out.println("Autentification est OK");
+					continu = false;
+					return true;
+				} else {
+					jop.showMessageDialog(jop, "Autentification echouée", 
+										"Info", jop.INFORMATION_MESSAGE);
+					System.out.println("Autentification echouée");
+				}
+			} else {
+				jop.showMessageDialog(jop, "Action annulée", "Info", jop.INFORMATION_MESSAGE);
+				System.out.println("Autentification annulée");
+				continu = false;
+				return false;
+			}
+		}
+		
+		return false;
+	}
+
+	public static String getUserString(int id) throws SQLException, BiblioException, IOException {
+		Connection connection = ConnectionFactory.getDbConnection();
+		connection.setAutoCommit(false);
+		UtilisateurI userDAO = new UtilisateurDAO(connection);
+		connection.commit();
+		connection.close();
+		//return userDAO.findByKey(id).toString();
+		Utilisateur user = userDAO.findByKey(id);
+		return null;
+	}
+	
 	public static void main(String[] args) 
-			throws IOException, SQLException, BiblioException {
+			throws IOException, SQLException, BiblioException, HeadlessException, BiblioDaoException {
 		EmprunterCtl emprunterCtl = new EmprunterCtl();
 		
 		System.out.println(listAllEmpruntEnCoursDB());
@@ -286,31 +340,46 @@ public class EmprunterCtl {
 		System.out.println(emprunterCtl.userRetour);
 		if (emprunterCtl.userRetour == 0) {//Swing (V2.0)
 			SwingUtilities.invokeLater(()->{
-				try {
-					new BiblioMainFrame2(getAllUtilisateurs(), 
-										getAllExemplaires(), 
-										null);
-				} catch (IOException | SQLException | BiblioException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+				if (getAutorisation()) {
+					try {
+						new BiblioMainFrame2(getAllUtilisateurs(), 
+											getAllExemplaires(), 
+											null);
+					} catch (IOException | SQLException | BiblioException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}else {
+					jop.showMessageDialog(jop, "Autentification requise", 
+							"Info", jop.INFORMATION_MESSAGE);
 				}
 			});
 		}
 		else if (emprunterCtl.userRetour == 1) {//Swing avec Jop
 			SwingUtilities.invokeLater(()->{
-				try {
-					new BiblioMainFrame(getAllUtilisateurs(), 
-										getAllExemplaires(), 
-										listAllEmpruntEnCoursDB());
-				} catch (IOException | SQLException | BiblioException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+				if (getAutorisation()) {
+					try {
+						new BiblioMainFrame(getAllUtilisateurs(), 
+											getAllExemplaires(), 
+											listAllEmpruntEnCoursDB());
+					} catch (IOException | SQLException | BiblioException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}else {
+					jop.showMessageDialog(jop, "Autentification requise", 
+							"Info", jop.INFORMATION_MESSAGE);
 				}
 			});
 		}
 		else if (emprunterCtl.userRetour == 2) {//concole
-			emprunterCtl.enregistrerEmprunt();
-			emprunterCtl.enregistrerRetour();
+			if (getAutorisation()) {
+				emprunterCtl.enregistrerEmprunt();
+				emprunterCtl.enregistrerRetour();
+			}else {
+				jop.showMessageDialog(jop, "Autentification requise", 
+						"Info", jop.INFORMATION_MESSAGE);
+			}
 		}
 		else {
 			emprunterCtl.jop.showMessageDialog(emprunterCtl.jop, "Action annulée", 

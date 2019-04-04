@@ -121,7 +121,7 @@ public class EmpruntEnCoursDAO implements EmpruntEnCoursI {
 	}
 	
 	@Override
-	public boolean madeReturn(int idExemplaire) throws SQLException {
+	public boolean madeReturn(int idExemplaire) throws SQLException, BiblioDaoException {
 		int warnings = 0;
 		int idUser = 0;
 		java.sql.Date dateEmprunt = null;
@@ -135,6 +135,9 @@ public class EmpruntEnCoursDAO implements EmpruntEnCoursI {
 			idUser = resultSet.getInt("idutilisateur");
 			dateEmprunt = resultSet.getDate("dateemprunt");
 			//dateEmprunt = new java.util.Date(resultSet.getDate("dateemprunt").getTime());
+		}
+		else {
+			throw new BiblioDaoException("enregistrement not found");
 		}
 //		int nextValue = 0;
 //		resultSet = statement.executeQuery("SELECT count(*) from empruntarchive");

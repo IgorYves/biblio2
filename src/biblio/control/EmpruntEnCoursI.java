@@ -9,6 +9,7 @@ import biblio.business.BiblioException;
 import biblio.business.EmpruntEnCours;
 import biblio.business.Exemplaire;
 import biblio.business.Utilisateur;
+import biblio.dao.BiblioDaoException;
 import biblio.dao.EmpruntEnCoursDB;
 
 public interface EmpruntEnCoursI {
@@ -31,6 +32,6 @@ public interface EmpruntEnCoursI {
 	List<EmpruntEnCoursDB> findByUtilisateur(Utilisateur user)
 			throws SQLException, BiblioException, IOException;
 
-	boolean madeReturn(int idExemplaire) throws SQLException;
+	boolean madeReturn(int idExemplaire) throws SQLException, BiblioDaoException;
 
 }

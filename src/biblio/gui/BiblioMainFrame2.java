@@ -11,6 +11,7 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.HeadlessException;
 import java.awt.RenderingHints;
 import java.awt.Toolkit;
 import java.awt.event.InputEvent;
@@ -18,13 +19,17 @@ import java.awt.event.KeyEvent;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
+import javax.swing.BoxLayout;
 import javax.swing.ButtonGroup;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
@@ -45,7 +50,9 @@ import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 import javax.swing.plaf.metal.MetalLookAndFeel;
 
+import biblio.business.Adherent;
 import biblio.business.BiblioException;
+import biblio.business.Employe;
 import biblio.business.Exemplaire;
 import biblio.business.Utilisateur;
 import biblio.control.EmprunterCtl;
@@ -64,6 +71,19 @@ public class BiblioMainFrame2 extends JFrame {
 	List<Utilisateur> utilisateurs;
 	List<Exemplaire> exemplaires;
 	List<EmpruntEnCoursDB> empruntsEnCoursDB;
+	HashMap<Integer, String> empruntsEnCoursDbList;
+	private JTable jTable1;
+	private JScrollPane tableJScrolPane;
+	private JPanel jPanelInt4;
+	private JPanel jPanelCenter;
+	private JTable jTable3;
+	private JScrollPane tableJScrolPane2;
+	private JPanel jPanelInt10;
+	private JPanel listUtilisateursPanel;
+	private JPanel listExemplairesPanel;
+	private JPanel listEmpruntsEnCoursDbPanel;
+	private JPanel jPanelInt8;
+	private JPanel userPanel;
 	
 	public BiblioMainFrame2() {
 		this(null, null, null);
@@ -71,7 +91,7 @@ public class BiblioMainFrame2 extends JFrame {
 	
 	public BiblioMainFrame2(List<Utilisateur> utilisateurs, 
 							List<Exemplaire> exemplaires, 
-							HashMap<Integer, String> empruntsEnCoursDB) {
+							HashMap<Integer, String> empruntsEnCoursDbList) {
 		makeMainFrame();
 		HYJPanel jPanel = new HYJPanel();
 		this.add(jPanel);
@@ -94,29 +114,42 @@ public class BiblioMainFrame2 extends JFrame {
 //******
 		jPanelTop.add(makeButtonEnregistrer());
 		jPanelTop.add(makeButtonRetour());
+		jPanelTop.add(makeButtonRefresh());
+		jPanelTop.add(makeButtonUser());
 //******
 		jPanel.add(jPanelTop, BorderLayout.PAGE_START);
 //--------------------------------------------------------------------
 		JTabbedPane jTabbedPane = new JTabbedPane();
 		jTabbedPane.setForeground(Color.BLACK);
-		jTabbedPane.setBackground(new Color(100, 160, 160));
+		jTabbedPane.setBackground(new Color(200, 160, 160));
 		jTabbedPane.setOpaque(false);
 		jTabbedPane.setFont(new Font("Ariel",Font.PLAIN,14));
 //******		
 		jTabbedPane.add("Enregistrer un Emprunt", makePaneEmprunt());
 //******		
 		jTabbedPane.add("Enregistrer un Retour", makePaneRetour());
-//******		
+//******
+		jTabbedPane.setBackgroundAt(0, new Color(130, 160, 160));
+		jTabbedPane.getComponentAt(0).setBackground(new Color(100, 160, 160));
+		jTabbedPane.setBackgroundAt(1, new Color(130, 160, 160));
+		jTabbedPane.getComponentAt(1).setBackground(new Color(100, 160, 160));
 		jPanel.add(jTabbedPane, BorderLayout.LINE_START);
 		
-//---------------------------------------------------------------------------------------------
-		JPanel jPanelCenter = new JPanel();
-		jPanelCenter.setLayout(new FlowLayout());
+		jPanelCenter = new JPanel();
 		jPanelCenter.setOpaque(false);
+		jPanelCenter.setLayout(new BoxLayout(jPanelCenter, BoxLayout.PAGE_AXIS));
 		
+		if (utilisateurs != null) {
+			jPanelCenter.add(makeUtilisateurs(utilisateurs));
+		}
+		if (exemplaires != null) {
+			jPanelCenter.add(makeExemplaires(exemplaires));
+		}
+		if (empruntsEnCoursDbList != null) {
+			jPanelCenter.add(makeEmpruntsEnCoursDB(empruntsEnCoursDbList));
+		}
 
-		
-		
+		jPanel.add(jPanelCenter, BorderLayout.CENTER);
 		
 	}//fin constructeur
 ///////////////////////////////////////////////////////////////////////////////////////////	
@@ -287,7 +320,13 @@ public class BiblioMainFrame2 extends JFrame {
 			jMBiblioRetourner.setMnemonic(KeyEvent.VK_R);
 			jMBiblioRetourner.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_R, InputEvent.CTRL_DOWN_MASK));
 			jMBiblioRetourner.addActionListener((actionEvent)-> {try {emprunterCtl.enregistrerRetour();} 
-									catch (IOException | SQLException | BiblioException e) {};});
+									catch (IOException | SQLException | BiblioException e) {} catch (HeadlessException e) {
+										// TODO Auto-generated catch block
+										e.printStackTrace();
+									} catch (BiblioDaoException e) {
+										// TODO Auto-generated catch block
+										e.printStackTrace();
+									};});
 			jMBiblio.add(jMBiblioRetourner);
 		
 		jMenuBar.add(jMBiblio);
@@ -333,14 +372,58 @@ public class BiblioMainFrame2 extends JFrame {
 		boutonRetour.setIcon(new ImageIcon("imgs/books2.png"));
 		boutonRetour.setRolloverIcon(new ImageIcon("imgs/hcbook.png"));
 		boutonRetour.addActionListener((actionEvent)-> {try {emprunterCtl.enregistrerRetour();} 
-					catch (IOException | SQLException | BiblioException e) 
+					catch (IOException | SQLException | BiblioException | HeadlessException | BiblioDaoException e) 
 						{e.printStackTrace();};repaint();});
 		return boutonRetour;
 	}
 	
+	private JButton makeButtonRefresh() {
+		JButton boutonRefresh = new JButton("Régénérer l'affichage");
+		boutonRefresh.setIcon(new ImageIcon("imgs/books2.png"));
+		boutonRefresh.setRolloverIcon(new ImageIcon("imgs/hcbook.png"));
+		boutonRefresh.addActionListener((actionEvent)-> {
+			try {
+				this.utilisateurs = biblio.control.EmprunterCtl.getAllUtilisateurs();
+				this.exemplaires = biblio.control.EmprunterCtl.getAllExemplaires();
+				this.empruntsEnCoursDbList = biblio.control.EmprunterCtl.listAllEmpruntEnCoursDB();
+				
+				this.jPanelCenter.removeAll();
+				this.jPanelCenter.add(makeUtilisateurs(this.utilisateurs));
+				this.jPanelCenter.add(makeExemplaires(this.exemplaires));
+				this.jPanelCenter.add(makeEmpruntsEnCoursDB(this.empruntsEnCoursDbList));
+				this.jPanelCenter.revalidate();
+				this.jPanelCenter.repaint();
+			} 
+			catch (IOException | SQLException | BiblioException e) {
+				e.printStackTrace();
+			};
+			repaint();
+		});
+		return boutonRefresh;
+	}
+	
+	private JButton makeButtonUser() {
+		JButton boutonUser = new JButton("Afficher utilisateur");
+		boutonUser.setIcon(new ImageIcon("imgs/useradd.png"));
+		boutonUser.addActionListener((actionEvent)-> {
+			this.jPanelCenter.removeAll();
+			try {
+				this.jPanelCenter.add(makeUser());
+			} catch (IOException | SQLException | BiblioException e) {
+				e.printStackTrace();
+			}
+			this.jPanelCenter.revalidate();
+			this.jPanelCenter.repaint();
+			repaint();
+		});
+		
+		
+		return boutonUser;
+	}
+	
 	private JPanel makePaneEmprunt() {
 		JPanel jPanelTabbedPane1 = new JPanel();
-		jPanelTabbedPane1.setOpaque(false);
+		jPanelTabbedPane1.setOpaque(true);
 		jPanelTabbedPane1.setBackground(new Color(100, 160, 160));
 
 		JPanel panel = new JPanel();
@@ -398,9 +481,16 @@ public class BiblioMainFrame2 extends JFrame {
 					try {
 						emprunterCtl.enregistrerEmprunt(userId, exemplaireId);
 					} 
-					catch (IOException | SQLException | BiblioException 
-						| NumberFormatException | BiblioDaoException e) {
+					catch (IOException | SQLException | NumberFormatException e) {
 						e.printStackTrace();
+					} catch (BiblioException e) {
+						jop.showMessageDialog(jop, "ERROR_MESSAGE : "
+								+ "conditions de pret ne sont pas acceptées", 
+								"Utilisateur", jop.ERROR_MESSAGE);
+					} catch (BiblioDaoException e) {
+						jop.showMessageDialog(jop, "ERROR_MESSAGE : biblio dao exception "
+										+ e.getMessage(), 
+								"Utilisateur", jop.ERROR_MESSAGE);
 					};
 				}
 			});
@@ -417,7 +507,7 @@ public class BiblioMainFrame2 extends JFrame {
 	private JPanel makePaneRetour() {
 
 		JPanel jPanelTabbedPane2 = new JPanel();
-		jPanelTabbedPane2.setOpaque(false);
+		jPanelTabbedPane2.setOpaque(true);
 
 		JPanel panel2 = new JPanel();
 		panel2.setOpaque(false);
@@ -455,7 +545,7 @@ public class BiblioMainFrame2 extends JFrame {
 					try {
 						emprunterCtl.enregistrerRetour(exemplaireId);
 					} 
-					catch (IOException | SQLException | NumberFormatException e) {
+					catch (IOException | SQLException | NumberFormatException | HeadlessException | BiblioDaoException e) {
 						e.printStackTrace();
 					};
 				}
@@ -470,8 +560,187 @@ public class BiblioMainFrame2 extends JFrame {
 		return jPanelTabbedPane2;
 	}
 	
-	private void reloadExemplaires() throws IOException, SQLException {
+	private JPanel makeUtilisateurs(List<Utilisateur> utilisateurs) {
+		int cols = 5;
+		System.out.println(utilisateurs);
+		int rows = utilisateurs.size();
+		String[] headers = {"id", "Nom", "Prenom", "H/F", "Categorie"};
+		Object[][] data = new Object[rows][cols];
+		for (int i = 0; i < utilisateurs.size(); i++) {
+			data[i][0] = utilisateurs.get(i).getIdUtilisateur();
+			data[i][1] = utilisateurs.get(i).getNom();
+			data[i][2] = utilisateurs.get(i).getPrenom();
+			data[i][3] = utilisateurs.get(i).getSexe();
+			String categorie = "";
+			if (utilisateurs.get(i) instanceof Adherent) {
+				categorie = "Adherent";
+			}
+			else if (utilisateurs.get(i) instanceof Employe) {
+				categorie = "Employé";
+			}
+			data[i][4] = categorie;
+		}
+		
+		jTable1 = new JTable(data, headers) {
+			@Override
+			public boolean getScrollableTracksViewportWidth() {
+				return super.getScrollableTracksViewportWidth()
+						&& getPreferredSize().width < getParent().getWidth();
+			}
+		};
+		jTable1.setOpaque(false);
+		
+		jTable1.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+		for(int i=0; i<jTable1.getColumnCount(); i++) {
+			jTable1.getColumnModel().getColumn(i).setPreferredWidth(140);
+		}
+		tableJScrolPane = new JScrollPane(jTable1);
+		tableJScrolPane.setPreferredSize(new Dimension(700, 200));
+		tableJScrolPane.setOpaque(false);
+		jPanelInt4 = new JPanel();
+		jPanelInt4.setOpaque(false);
+		jPanelInt4.add(tableJScrolPane);
+		return jPanelInt4;
+	}
+	
+	private JPanel makeExemplaires(List<Exemplaire> exemplaires) {
+		jPanelInt7 = new JPanel();
+		//jPanelInt7.setBackground(new Color(130, 150, 150));
+		jPanelInt7.setOpaque(false);
+	
+	
+		int cols = 4;
+		int rows = exemplaires.size();
+		String[] headers = {"id", "Date achat", "Status", "ISBN"};
+		Object[][] data = new Object[rows][cols];
+		for (int i = 0; i < exemplaires.size(); i++) {
+			data[i][0] = exemplaires.get(i).getIdExemplaire();
+			data[i][1] = exemplaires.get(i).getDateAchat();
+			data[i][2] = exemplaires.get(i).getStatus();
+			data[i][3] = exemplaires.get(i).getIsbn();
+			
+		}
+		
+		jTable2 = new JTable(data, headers) {
+			@Override
+			public boolean getScrollableTracksViewportWidth() {
+				return super.getScrollableTracksViewportWidth()
+						&& getPreferredSize().width < getParent().getWidth();
+			}
+		};
+		//jTable2.setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
+		//jTable2.setFillsViewportHeight(true);
+		
+		jTable2.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+		for(int i=0; i<jTable2.getColumnCount(); i++) {
+			jTable2.getColumnModel().getColumn(i).setPreferredWidth(140);
+		}
+		JScrollPane tableJScrolPane = new JScrollPane(jTable2);
+		tableJScrolPane.setPreferredSize(new Dimension(700, 200));
+		jPanelInt7.add(tableJScrolPane);
+
+		return jPanelInt7;
+	}
+	
+	private JPanel makeEmpruntsEnCoursDB(HashMap<Integer, String> empruntsEnCoursDbList) {
+		jPanelInt10 = new JPanel();
+		//jPanelInt10.setBackground(new Color(130, 150, 150));
+		jPanelInt10.setOpaque(false);
+		
+		int cols = 2;
+		int rows = empruntsEnCoursDbList.size();
+		String[] headers = {"id Exemplaire", "id Utilisateur, Date Emprunt"};
+		Object[][] data = new Object[rows][cols];
+		
+		Set<Integer> empruntEnCoursKeys = empruntsEnCoursDbList.keySet();
+		Iterator iterator = empruntEnCoursKeys.iterator();
+		Integer current = null;
+		int i = 0;
+		while (iterator.hasNext()) {
+			current = (Integer) iterator.next();
+			data[i][0] = current;
+			data[i][1] = empruntsEnCoursDbList.get(current);
+			i++;
+		}
+		
+		jTable3 = new JTable(data, headers) {
+			@Override
+			public boolean getScrollableTracksViewportWidth() {
+				return super.getScrollableTracksViewportWidth()
+						&& getPreferredSize().width < getParent().getWidth();
+			}
+		};
+		
+		jTable3.setAutoResizeMode(JTable.AUTO_RESIZE_ALL_COLUMNS);
+		for(int i2=0; i2<jTable3.getColumnCount(); i2++) {
+			jTable3.getColumnModel().getColumn(i2).setPreferredWidth(140);
+		}
+		tableJScrolPane2 = new JScrollPane(jTable3);
+		tableJScrolPane2.setPreferredSize(new Dimension(700, 200));
+		jPanelInt10.add(tableJScrolPane2);
+		return jPanelInt10;
+	}
+
+	private JPanel makeUser() throws IOException, SQLException, BiblioException {
+		jPanelInt8 = new JPanel();
+		jPanelInt8.setOpaque(false);
+		jPanelInt8.setLayout(new BoxLayout(jPanelInt8, BoxLayout.Y_AXIS));
+		JPanel selectUser = new JPanel();
+		
+		HashMap<Integer, String> users = biblio.control.EmprunterCtl.listAllUtilisateurs();
+		
+		Integer[] combo2UsersId = new Integer[users.size()];
+		Set<Integer> usersKeys = users.keySet();
+		combo2UsersId = usersKeys.toArray(combo2UsersId);
+		String[] combo = new String[users.size()];
+		for (int i = 0; i < combo.length; i++) {
+			combo[i] = combo2UsersId[i] + users.get(combo2UsersId[i]);
+		}
+		
+		JComboBox<String> jComboBox1 = new JComboBox<>(combo);
+		jComboBox1.addActionListener((actionEvent)->{
+			JComboBox comboBox = (JComboBox)actionEvent.getSource();
+	        String user = (String)comboBox.getSelectedItem();
+	        int userId = Integer.parseInt(user.substring(0, 1));
+	        System.out.println(user);
+	        System.out.println(userId);
+	        try {
+				this.afficheUser(userId);
+			} catch (SQLException | BiblioException | IOException e) {
+				e.printStackTrace();
+			}
+			
+		});
+		
+		selectUser.add(jComboBox1);
+		jPanelInt8.add(selectUser);
+		
+		userPanel = new JPanel();
+		
+		jPanelInt8.add(userPanel);
+		
+		return jPanelInt8;
+	}
+	
+	private void afficheUser(int userId) throws SQLException, BiblioException, IOException {
+		this.userPanel.removeAll();
+		this.userPanel.add(new JLabel(biblio.control.EmprunterCtl.getUserString(userId)));
+		this.userPanel.revalidate();
+		this.userPanel.repaint();
+		repaint();
+	}
+	
+	private void reloadUtilisateurs() 
+			throws IOException, SQLException, BiblioException {
+		utilisateurs = emprunterCtl.getAllUtilisateurs();
+	}
+	private void reloadExemplaires() 
+			throws IOException, SQLException {
 		exemplaires = emprunterCtl.getAllExemplaires();
+	}
+	private void reloadEmpruntsEnCoursDB() 
+			throws IOException, SQLException, BiblioException {
+		empruntsEnCoursDbList = emprunterCtl.listAllEmpruntEnCoursDB();
 	}
 }
 
